@@ -1,5 +1,5 @@
-classdef walker
-    %walker is a class that defines a kneed biped robot.
+classdef KneedWalker
+    %KneedWalker is a class that defines a kneed biped robot.
     
     
     %  Important note: don't forget to set the last value of the initial
