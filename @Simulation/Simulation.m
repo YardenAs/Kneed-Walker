@@ -228,42 +228,4 @@ classdef Simulation < handle & matlab.mixin.Copyable
     end
 end
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ControlParams=[1.266646286756660, 0.597267606409947,...
-%                -7.384173104761088, 0.126800300703305, 0.072267297914989,...
-%                 5.191278913625541, 0.166498744328709, 0.053696788954836];
-%                     
-% SimType=1;
-% 
-% if SimType==1
-%     % Terrain parameters
-%     FloorType=0;
-%     InitSlope=0;
-%     EndSlope=0;
-%     Adaptive=0;
-% else
-%     % Terrain parameters
-%     FloorType=2;
-%     InitSlope=0;
-%     Adaptive=1;
-%     
-%     % Start the slope after giving the robot
-%     % 10 seconds to reach steady state
-%     Floor.start_x=AvgVel*10;
-%     
-%     MinSlope=0;
-%     MaxSlope=0;
-% end
-% 
-% 
-%     function StopButtonCallback(t,X) %#ok<INUSD>
-%         StopSim=1;
-%         close all
-%         dispLength='%5.7f';
-%         disp(['InitCond=[',num2str(IC_Store(1,1),dispLength),', ',num2str(IC_Store(2,1),dispLength),', ',...
-%                         num2str(IC_Store(3,1),dispLength),', ',num2str(IC_Store(4,1),dispLength),', ',...
-%                         num2str(IC_Store(5,1),dispLength),'];',10]);
-%     end  % StopButtonCallback
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
