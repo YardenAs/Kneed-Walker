@@ -92,12 +92,18 @@ classdef KneedWalker
                 x = rt(1);
                 y = rt(2);
                 Pos = [x y];
+            case 'TorsoEnd'
+                rt = [X(1) + KW.to(2)*sin(X(5)), X(3) + KW.to(2)*cos(X(5))];
+                x = rt(1);
+                y = rt(2);
+                Pos = [x y];
             case 'Hip'
                 x = X(1);
                 y = X(3);
-                Pos = [x y];   
+                Pos = [x y];
             otherwise
                 error('No such position');
+                
         end
         end
         
