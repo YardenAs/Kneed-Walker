@@ -1,63 +1,63 @@
 % %%%%%% % Renders Kneed-Walker % %%%%%% %
-function status = Render(KW, t, X, flag)
+function status = Render(Sim, t, X, flag)
     % Get model positions
-    Sankle  = KW.GetPos(X,'Sankle');
-    Sknee   = KW.GetPos(X,'Sknee');
-    Hip     = KW.GetPos(X,'Hip');
-    Head    = KW.GetPos(X,'TorsoEnd');
-    NSankle = KW.GetPos(X,'NSankle');
-    NSknee  = KW.GetPos(X,'NSknee');
+    Sankle  = Sim.Mod.GetPos(X,'Sankle');
+    Sknee   = Sim.Mod.GetPos(X,'Sknee');
+    Hip     = Sim.Mod.GetPos(X,'Hip');
+    Head    = Sim.Mod.GetPos(X,'TorsoEnd');
+    NSankle = Sim.Mod.GetPos(X,'NSankle');
+    NSknee  = Sim.Mod.GetPos(X,'NSknee');
 
-    if isempty(KW.RenderObj)
+    if isempty(Sim.Mod.RenderObj)
         % Model hasn't been rendered yet
         
         % Render links
-        KW.RenderObj.nL1 = DrawLink(KW, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, []);           % Support Thigh
-        KW.RenderObj.nL2 = DrawLink(KW, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, []);     % Support Shank
-        KW.RenderObj.nL3 = DrawLink(KW, Hip(1), Hip(2), Head(1), Head(2), 0, []);             % Torso
-        KW.RenderObj.nL4 = DrawLink(KW, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, []);         % NSupport Thigh
-        KW.RenderObj.nL5 = DrawLink(KW, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, []); % NSupport Shank
+        Sim.Mod.RenderObj.nL1 = DrawLink(Sim.Mod, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, []);           % Support Thigh
+        Sim.Mod.RenderObj.nL2 = DrawLink(Sim.Mod, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, []);     % Support Shank
+        Sim.Mod.RenderObj.nL3 = DrawLink(Sim.Mod, Hip(1), Hip(2), Head(1), Head(2), 0, []);             % Torso
+        Sim.Mod.RenderObj.nL4 = DrawLink(Sim.Mod, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, []);         % NSupport Thigh
+        Sim.Mod.RenderObj.nL5 = DrawLink(Sim.Mod, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, []); % NSupport Shank
 
         axis equal
         axis([-0.5 1 0 1])
         
         % Finished rendering
         % Call function again to proceed with the code below
-        Render(KW, t, X, flag);
+        Render(Sim.Mod, t, X, flag);
     else
-        KW.RenderObj.nL1 = DrawLink(KW, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, KW.RenderObj.nL1);           % Support Thigh
-        KW.RenderObj.nL2 = DrawLink(KW, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, KW.RenderObj.nL2);     % Support Shank
-        KW.RenderObj.nL3 = DrawLink(KW, Hip(1), Hip(2), Head(1), Head(2), 0, KW.RenderObj.nL3);             % Torso
-        KW.RenderObj.nL4 = DrawLink(KW, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, KW.RenderObj.nL4);         % NSupport Thigh
-        KW.RenderObj.nL5 = DrawLink(KW, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, KW.RenderObj.nL5); % NSupport Shank
+        Sim.Mod.RenderObj.nL1 = DrawLink(Sim.Mod, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL1);           % Support Thigh
+        Sim.Mod.RenderObj.nL2 = DrawLink(Sim.Mod, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, Sim.Mod.RenderObj.nL2);     % Support Shank
+        Sim.Mod.RenderObj.nL3 = DrawLink(Sim.Mod, Hip(1), Hip(2), Head(1), Head(2), 0, Sim.Mod.RenderObj.nL3);             % Torso
+        Sim.Mod.RenderObj.nL4 = DrawLink(Sim.Mod, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL4);         % NSupport Thigh
+        Sim.Mod.RenderObj.nL5 = DrawLink(Sim.Mod, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, Sim.Mod.RenderObj.nL5); % NSupport Shank
     end
     status = 0;
 
     % %%%%%%%% Auxiliary nested functions %%%%%%%% %
     % %%%% Draw Circle %%%% %
     % Draws a circle of radius R in pos (x,y,z)
-    function [ KW ] = DrawCircle(KW, x, y, z, R, color, ID) %#ok
-        coordX=zeros(1,KW.CircRes);
-        coordY=zeros(1,KW.CircRes);
-        coordZ=zeros(1,KW.CircRes);
+    function [ Sim.Mod ] = DrawCircle(KW, x, y, z, R, color, ID) %#ok
+        coordX=zeros(1,Sim.Mod.CircRes);
+        coordY=zeros(1,Sim.Mod.CircRes);
+        coordZ=zeros(1,Sim.Mod.CircRes);
 
-        for r=1:KW.CircRes
-            coordX(1,r)=x+R*cos(r/KW.CircRes*2*pi);
-            coordY(1,r)=y+R*sin(r/KW.CircRes*2*pi);
+        for r=1:Sim.Mod.CircRes
+            coordX(1,r)=x+R*cos(r/Sim.Mod.CircRes*2*pi);
+            coordY(1,r)=y+R*sin(r/Sim.Mod.CircRes*2*pi);
             coordZ(1,r)=z;
         end
 
         h=patch(coordX,coordY,coordZ,color);
         set(h,'EdgeColor',color.^4);
-        set(h,'LineWidth',2*KW.LineWidth);
+        set(h,'LineWidth',2*Sim.Mod.LineWidth);
 
         switch ID
             case 1
-                KW.RenderObj.Cm1=h;
+                Sim.Mod.RenderObj.Cm1=h;
             case 2
-                KW.RenderObj.Cm2=h;
+                Sim.Mod.RenderObj.Cm2=h;
             case 3
-                KW.RenderObj.Cmh=h;
+                Sim.Mod.RenderObj.Cmh=h;
             otherwise
                 return;
         end                    
@@ -76,28 +76,28 @@ function status = Render(KW, t, X, flag)
             Txy=makehgtform('translate',[Center(1) Center(2) 0]);
             Rz=makehgtform('zrotate',Orientation-pi/2);
 
-            coordX=zeros(1,2*KW.LinkRes+1);
-            coordY=zeros(1,2*KW.LinkRes+1);
-            coordZ=zeros(1,2*KW.LinkRes+1);
+            coordX=zeros(1,2*Sim.Mod.LinkRes+1);
+            coordY=zeros(1,2*Sim.Mod.LinkRes+1);
+            coordZ=zeros(1,2*Sim.Mod.LinkRes+1);
 
             x=0;
-            y=Length-KW.link_width/2;
-            for r=1:KW.LinkRes
-                coordX(1,r)=x+KW.link_width/2*cos(r/KW.LinkRes*pi);
-                coordY(1,r)=y+KW.link_width/2*sin(r/KW.LinkRes*pi);
+            y=Length-Sim.Mod.link_width/2;
+            for r=1:Sim.Mod.LinkRes
+                coordX(1,r)=x+Sim.Mod.link_width/2*cos(r/Sim.Mod.LinkRes*pi);
+                coordY(1,r)=y+Sim.Mod.link_width/2*sin(r/Sim.Mod.LinkRes*pi);
                 coordZ(1,r)=0;
             end
 
-            y=KW.link_width/2;
-            for r=KW.LinkRes:2*KW.LinkRes
-                coordX(1,r+1)=x+KW.link_width/2*cos(r/KW.LinkRes*pi);
-                coordY(1,r+1)=y+KW.link_width/2*sin(r/KW.LinkRes*pi);
+            y=Sim.Mod.link_width/2;
+            for r=Sim.Mod.LinkRes:2*Sim.Mod.LinkRes
+                coordX(1,r+1)=x+Sim.Mod.link_width/2*cos(r/Sim.Mod.LinkRes*pi);
+                coordY(1,r+1)=y+Sim.Mod.link_width/2*sin(r/Sim.Mod.LinkRes*pi);
                 coordZ(1,r+1)=0;
             end
 
-            res.Geom=patch(coordX,coordY,coordZ,KW.link_color); 
+            res.Geom=patch(coordX,coordY,coordZ,Sim.Mod.link_color); 
             set(res.Geom,'EdgeColor',[0 0 0]);
-            set(res.Geom,'LineWidth',2*KW.LineWidth);
+            set(res.Geom,'LineWidth',2*Sim.Mod.LineWidth);
 
             set(res.Geom,'Parent',res.Trans);
             set(res.Trans,'Matrix',Txy*Rz);
@@ -107,7 +107,7 @@ function status = Render(KW, t, X, flag)
 
             Txy=makehgtform('translate',[x0 y0 z]);
             Rz=makehgtform('zrotate',Orientation-pi/2);
-%             Sx=makehgtform('scale',[1,Length/(2*KW.l),1]);
+%             Sx=makehgtform('scale',[1,Length/(2*Sim.Mod.l),1]);
             set(Obj.Trans,'Matrix',Txy*Rz);
             res=1;
         end
@@ -116,7 +116,7 @@ function status = Render(KW, t, X, flag)
     % %%%% Draw Vector %%%% %
     % Draws a vector from x0 to x1
     function DrawVector(KW,x0,x1,zIndex,Color) %#ok
-        VecScale=KW.link_width*0.75;
+        VecScale=Sim.Mod.link_width*0.75;
         Length=sqrt((x1(1)-x0(1))^2+(x1(2)-x0(2))^2);
         if Length<VecScale*4
             return;

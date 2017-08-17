@@ -1,4 +1,4 @@
-classdef KneedWalker
+classdef KneedWalker  < handle & matlab.mixin.Copyable
     % KneedWalker is a class that defines a kneed biped robot.
 
     properties
@@ -11,13 +11,10 @@ classdef KneedWalker
         % Support leg coordinates
         xS = 0;
         yS = 0;
+
         
-        % enum
-        Left  = 1;
-        Right = 2;
-        
-        % Support Leg and Phase
-        Support = 2;
+        % Support Leg
+        Support = 'Left';
         
         % Control torques
         Torques = [0 0 0 0].'; % Ship, NShip, Sknee, NSknee
@@ -66,6 +63,11 @@ classdef KneedWalker
             end
         end
                
+        function IC = Init(KW,Sankle,a,gs,gns,bs,bns)
+           HipPos = Sankle + [-KW.sh(2)*sin(bs) - KW.th(2)*sin(gs), KW.sh(2)*cos(bs) + KW.th(2)*cos(gs)];
+           IC = [HipPos(1), 0 HipPos(2), 0, a, 0, gs, 0, gns, 0, bs, 0, bns, 0];
+        end
+        
         function Pos = GetPos(KW, X, which)
         switch which
             case 'Sankle'
@@ -224,7 +226,7 @@ classdef KneedWalker
             SAnklePos = KW.GetPos(X, 'Sankle');
             value(2) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
             % Event 3 - abs(alpha) >= pi/2 (torso rotation)  
-            value(3) = abs(X(5)) - pi/2;
+            value(3) = pi/2 - abs(X(5));
             % Event 4 - Sknee lock
             value(4) = X(11) - X(7);
             % Event 5 - NSknee lock
@@ -232,12 +234,13 @@ classdef KneedWalker
         end
         
         function [Xf] = CalcImpact(KW, Xi)
-        [M, ~, ~, W, ~, ~] = DynEq(KW, X);
-        Xf = Xi;
-        Xf([2 4 6 8 10 12 14]) = (eye(7) - M^-1*W.'*(W*M^-1*W.')^-1*W)*Xi([2 4 6 8 10 12 14]); % refer to Hybrid dynamics course for this equation
+            [M, ~, ~, W, ~, ~] = DynEq(KW, Xi);
+            Xf = Xi;
+            Xf([2 4 6 8 10 12 14]) = (eye(7) - M^-1*W.'*(W*M^-1*W.')^-1*W)*Xi([2 4 6 8 10 12 14]).'; % refer to Hybrid dynamics course for this equation
+            Xf = [Xf(1:6), Xf(9:10), Xf(7:8), Xf(13:14), Xf(11:12)]; % Switch Coordinates of support & non-support after Impact
         end
        
-        function [KW, Xf] = HandleEvent(KW, iEvent, Xi)
+        function Xf = HandleEvent(KW, iEvent, Xi)
         % 1 - leg contact
         % 2 - robot fell
         % 3 - abs(alpha) >= pi/2 (torso rotation)
@@ -246,17 +249,17 @@ classdef KneedWalker
         % Event 1 - Ground contact
             switch iEvent
                 case 1 
-                     Xf = CalcImpact(KW, Xi);
+                    Xf = CalcImpact(KW, Xi);
                     % Update support leg
-                    if KW.Support == KW.Left
-                    KW.Support = KW.Right;
-                    elseif KW.Support == KW.Right
-                        KW.Support = KW.Left;
+                    if KW.Support == 'Left'
+                    KW.Support = 'Right';
+                    elseif KW.Support == 'Right'
+                        KW.Support = 'Left';
                     end
                     % Update support foot position
-                    [xNS, yNS] = KW.GetPos(Xb,'NS');
-                    KW.yS = yNS;
-                    KW.xS = xNS;
+                    NSPos = KW.GetPos(Xf,'NSankle');
+                    KW.xS = NSPos(1);
+                    KW.yS = NSPos(2);
                 % Event 2 - Robot fell
                 case 2 
                     Xf = Xi;
