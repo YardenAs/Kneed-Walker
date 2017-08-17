@@ -1,5 +1,5 @@
-function [M, B, G, W, Wdot, Fq,C] = DynEq(KW, X)
-% Decides what are the right dynamic equations and gives the corresponding 
+function [M, B, G, W, Wdot, Fq] = DynEq(KW, X)
+% Decides what are the right dynamic equations and gives the corresponding
 % Matrices. For further information about the derivation of the matrices,
 % look at DynamicEqsDerivation.m script
 
@@ -9,7 +9,7 @@ msh = KW.sh(1); lsh = KW.sh(2); Ish = KW.sh(3);
 mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3);
 g = KW.g;
 uShip = KW.Torques(1); uNShip = KW.Torques(2); uSknee = KW.Torques(3);...
-        uNSknee = KW.Torques(4);
+    uNSknee = KW.Torques(4);
 
 
 x = X(1); %#ok
@@ -52,8 +52,8 @@ B =    [(lsh*msh*sin(bns)*dbns^2)/4 + ((lth*msh*sin(gns))/2 + (lth*mth*sin(gns))
 %                                                                                                                                       (lsh*msh*sin(bs + gns)*dbs^2*lth)/4 + (msh*sin(gns + gs)*dgs^2*lth^2)/2
 %                                                                                                                (lsh*msh*(lsh*sin(bns + bs)*dbns^2 + 2*lth*sin(bs + gns)*dgns^2 + 4*lth*sin(bs - gs)*dgs^2))/8
 %                                                                                                                                       (msh*sin(bns + bs)*dbs^2*lsh^2)/8 + (lth*msh*sin(bns + gs)*dgs^2*lsh)/4];
-% 
-% 
+%
+%
 G = [0
     g*(2*msh + mt + 2*mth)
     -(g*lt*mt*sin(a))/2
@@ -63,47 +63,11 @@ G = [0
     (g*lsh*msh*sin(bns))/2];
 
 %%% Dynamic eqs decision %%%
+W = [ 1, 0, 0, lth*cos(gs), 0, lsh*cos(bs), 0
+    0, 1, 0, lth*sin(gs), 0, lsh*sin(bs), 0];
 
-switch KW.Phase
-    case 'KneesFree'
-        W = [ 1, 0, 0, lth*cos(gs), 0, lsh*cos(bs), 0
-            0, 1, 0, lth*sin(gs), 0, lsh*sin(bs), 0];
-        
-        Wdot = [ 0, 0, 0, -dgs*lth*sin(gs), 0, -dbs*lsh*sin(bs), 0
-            0, 0, 0,  dgs*lth*cos(gs), 0,  dbs*lsh*cos(bs), 0];
-        
-        
-    case 'SkneeFree'
-        W = [ 1, 0, 0, lth*cos(gs), 0, lsh*cos(bs),  0
-            0, 1, 0, lth*sin(gs), 0, lsh*sin(bs),  0
-            0, 0, 0,           0, 1,           0, -1];
-        Wdot = [ 0, 0, 0, -dgs*lth*sin(gs), 0, -dbs*lsh*sin(bs), 0
-            0, 0, 0,  dgs*lth*cos(gs), 0,  dbs*lsh*cos(bs), 0
-            0, 0, 0,                0, 0,                0, 0];
-        
-        
-    case 'NSKneeFree'
-        W = [ 1, 0, 0, lth*cos(gs), 0, lsh*cos(bs), 0
-            0, 1, 0, lth*sin(gs), 0, lsh*sin(bs), 0
-            0, 0, 0,          -1, 0,           1, 0];
-        Wdot = [ 0, 0, 0, -dgs*lth*sin(gs), 0, -dbs*lsh*sin(bs), 0
-            0, 0, 0,  dgs*lth*cos(gs), 0,  dbs*lsh*cos(bs), 0
-            0, 0, 0,                0, 0,                0, 0];
-        
-        
-    case 'KneesLock'
-        W = [ 1, 0, 0, lth*cos(gs), 0, lsh*cos(bs),  0
-            0, 1, 0, lth*sin(gs), 0, lsh*sin(bs),  0
-            0, 0, 0,          -1, 0,           1,  0
-            0, 0, 0,           0, 1,           0, -1];
-        
-        Wdot = [ 0, 0, 0, -dgs*lth*sin(gs), 0, -dbs*lsh*sin(bs), 0
-               0, 0, 0,  dgs*lth*cos(gs), 0,  dbs*lsh*cos(bs), 0
-            0, 0, 0,                0, 0,                0, 0
-            0, 0, 0,                0, 0,                0, 0];
-    otherwise
-        error('No such phase');
-end
+Wdot = [ 0, 0, 0, -dgs*lth*sin(gs), 0, -dbs*lsh*sin(bs), 0
+    0, 0, 0,  dgs*lth*cos(gs), 0,  dbs*lsh*cos(bs), 0];
 
 
 Fq = [          0
