@@ -17,7 +17,62 @@ classdef Simulation < handle & matlab.mixin.Copyable
     
         % Simulation parameters
         IC;
+        infTime;
+        tstep; tstep_normal; tstep_small = [];
+        tstart; tend; tspan;
+        
+        % Performance tracking / Statistics
+        Out; % output holder
         EndCond = 0;
+        % Set EndCond to run the sim until:
+        % 0 - the end of time
+        % [1,numsteps] - numsteps are taken on end_slope
+        % 2 - the system converges to a limit cycle
+        EndZMP = 1;
+        % If EndZMP = 1 the simulation will stop if the
+        % limits defined in the CB model are crossed
+        
+        CurSpeed; StepsTaken; Steps2Slope;
+        MaxSlope; MinSlope;
+        ICstore; nICsStored = 10; ICdiff;
+        minDiff = 5e-7; % Min. difference for LC convergence
+        stepsReq = 6; % Steps of minDiff required for convergence
+        stepsSS; % Steps taken since minDiff
+        
+        % Poincare map calculation parameters
+        IClimCyc; Period;
+        PMeps = 1e-5; PMFull = 0;
+        PMeigs; PMeigVs;
+        % Check convergence progression
+        doGoNoGo = 1; % 0 - OFF, 1 - Extend, 2 - Cut
+        GNGThresh = [6,6]; % required steps for go/no-go order
+        minMaxDiff = [1,0];
+        MinMaxStore = [];
+        ConvProgr = [0,0];
+                
+        % Rendering params
+        Graphics = 1;
+        TimeTic = 0; RSkip = 0;
+        Fig = 0; Once = 1; StopSim;
+        FigWidth; FigHeight; AR;
+        % Environment display
+        FlMin; FlMax; HeightMin; HeightMax;
+        
+        Follow = 1; % Follow model with camera
+        % COM transformation
+        tCOM; COMx0; COMy0;
+        % Parameter tweak display
+        hParam;
+        % Time display
+        hTime; TimeStr = ['t = %.2f s\nPhase = %.3f\n',...
+                         'Slope = %.2f ',char(176)','\nSpeed = %s'];
+        % Convergence display
+        hConv; ConvStr = 'Diff = %.2e\nPeriod = %s';
+        % Torques display
+        nOuts; nTsteps;
+        Ttime; Thold; Tbase; Tscale;
+        hTorques;
+        Colors = {[1 0 0],[0 0 1],[0 1 0],[0 0 0]};
     end
     
     methods
@@ -29,7 +84,7 @@ classdef Simulation < handle & matlab.mixin.Copyable
                     sim.Con = varargin{2};
                     sim.Env = varargin{3};
                 otherwise
-                    sim.Mod = Kn();
+                    sim.Mod = CompassBiped();
                     sim.Con = Controller();
                     sim.Env = Terrain();
             end            
@@ -173,4 +228,42 @@ classdef Simulation < handle & matlab.mixin.Copyable
     end
 end
 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ControlParams=[1.266646286756660, 0.597267606409947,...
+%                -7.384173104761088, 0.126800300703305, 0.072267297914989,...
+%                 5.191278913625541, 0.166498744328709, 0.053696788954836];
+%                     
+% SimType=1;
+% 
+% if SimType==1
+%     % Terrain parameters
+%     FloorType=0;
+%     InitSlope=0;
+%     EndSlope=0;
+%     Adaptive=0;
+% else
+%     % Terrain parameters
+%     FloorType=2;
+%     InitSlope=0;
+%     Adaptive=1;
+%     
+%     % Start the slope after giving the robot
+%     % 10 seconds to reach steady state
+%     Floor.start_x=AvgVel*10;
+%     
+%     MinSlope=0;
+%     MaxSlope=0;
+% end
+% 
+% 
+%     function StopButtonCallback(t,X) %#ok<INUSD>
+%         StopSim=1;
+%         close all
+%         dispLength='%5.7f';
+%         disp(['InitCond=[',num2str(IC_Store(1,1),dispLength),', ',num2str(IC_Store(2,1),dispLength),', ',...
+%                         num2str(IC_Store(3,1),dispLength),', ',num2str(IC_Store(4,1),dispLength),', ',...
+%                         num2str(IC_Store(5,1),dispLength),'];',10]);
+%     end  % StopButtonCallback
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
