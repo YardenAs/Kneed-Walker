@@ -1,4 +1,6 @@
-KW = KneedWalker;
+KW = KneedWalker; 
+Control = Controller(0.5*ones(1,4),ones(1,4),[0 pi/2 0 pi/2]);
+Sim = Simulation(KW, Control, Terrain);
 Sim.IC = zeros(1,14);
 opt = odeset('reltol', 1e-9, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
@@ -17,3 +19,12 @@ while ~EndCond
             EndCond = 1;
         end
 end
+
+for ii = 1:length(Time)-1
+    KW.Render(Time(ii),X(ii,:),1);
+    dt = Time(ii+1) - Time(ii);
+%     addpoints(path, COM(ii,1), COM(ii,2));
+%     drawnow;
+    pause(dt*11);
+end
+

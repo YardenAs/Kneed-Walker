@@ -6,6 +6,7 @@ classdef KneedWalker
         th = [];       % thigh mass, length, moment of inertia
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
+        Order = 14;
 
         % Support leg coordinates
         xS = 0;
@@ -216,8 +217,8 @@ classdef KneedWalker
             % 4 - Sknee lock
             % 5 - NSknee lock
             % Event 1 - Ground contact   
-            yNS = KW.GetPos(X, 'NSankle');
-            value(1) = yNS - Floor.Surf(xNS);
+            NSPos = KW.GetPos(X, 'NSankle');
+            value(1) = NSPos(2) - Floor.Surf(NSPos(1));
             % Event 2 - robot fell
             HipPos = KW.GetPos(X, 'Hip');
             SAnklePos = KW.GetPos(X, 'Sankle');
