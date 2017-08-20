@@ -1,8 +1,8 @@
 KW = KneedWalker; 
 Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
-Floor = Terrain(0,-6);
+Floor = Terrain(0,-2);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = Sim.Mod.Init([0,0],pi,pi/6,-pi/12,-pi/12,pi/2);
+Sim.IC = [0 0 -30/180*pi 190/180*pi 170/180*pi pi 12/18*pi zeros(1,7)];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
@@ -25,8 +25,15 @@ end
 for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
     dt = Time(ii+1) - Time(ii);
-%     addpoints(path, COM(ii,1), COM(ii,2));
-%     drawnow;
-    pause(dt*11);
+    drawnow;
+    pause(dt*10);
 end
-
+E = [];
+for ii = 1:length(Time)
+    E(ii) = Sim.Mod.GetEnergy(X(ii,:));
+    Pos(ii,:) = KW.GetPos(X(ii,:), 'NSankle');
+end
+figure()
+plot(Time,E)
+figure()
+plot(Time,Pos(:,2));
