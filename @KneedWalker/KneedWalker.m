@@ -11,11 +11,15 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % Support
         Support = 'Left'; % Right
         
+        % Flags
+        BadImpulse = [];
+        BadLiftoff = [];
+        
         % Control torques
         Torques = [0 0 0 0].'; % Ship, NShip, Sknee, NSknee
         
         % Event index
-        nEvents = 7; 
+        nEvents = 5; 
         % 1 - leg contact
         % 2 - robot fell
         % 3 - abs(alpha) >= pi/2 (torso rotation)
@@ -106,6 +110,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         
         function Vel = GetVel(KW, X, which)
         switch which
+            case 'Sankle'
+                xdot =  X(8);
+                ydot =  X(9);
+                Vel = [xdot ydot];
             case 'NSankle'
                 xdot =  X(8) - X(12)*KW.th(2)*cos(X(5)) + X(11)*KW.th(2)*cos(X(4)) - X(14)*KW.sh(2)*cos(X(7)) + X(13)*KW.sh(2)*cos(X(6));
                 ydot =  X(9) - X(12)*KW.th(2)*sin(X(5)) + X(11)*KW.th(2)*sin(X(4)) - X(14)*KW.sh(2)*sin(X(7)) + X(13)*KW.sh(2)*sin(X(6));
@@ -223,34 +231,48 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             value(5) = X(5) - X(7);
         end
         
-        function [Xf] = CalcImpact(KW, Xi)
+        function [Xf, Lambda] = CalcImpact(KW, Xi)
             [M, ~, ~, Wc, ~, ~] = DynEq(KW, Xi);
-%             Xdotnew = (eye(7) - M^-1*Wc.'*((Wc*M^-1*Wc.')^-1)*Wc)*Xi(8:end).'; % refer to Hybrid dynamics course for this equation
             A = [M, -Wc.';Wc, zeros(2)];
             b = [M*Xi(8:end).';zeros(2,1)];
             sol = A\b;
             Xdotnew = sol(1:7);
-            disp(num2str(sol(8:9)))
             Xf = [Xi(1:7),Xdotnew.'];
+            Lambda = sol(8:end);
         end
        
-        function Xf = HandleEvent(KW, iEvent, Xi)
+        function Xf = HandleEvent(KW, iEvent, Xi, Floor)
             % 1 - leg contact
-            % 2 - Fn = 0 Right
-            % 3 - Fn = 0 Left
-            % 4 - robot fell
-            % 5 - abs(alpha) >= pi/2 (torso rotation)
-            % 6 - Sknee lock
-            % 7 - NSknee lock
+            % 2 - robot fell
+            % 3 - abs(alpha) >= pi/2 (torso rotation)
+            % 4 - Sknee lock
+            % 5 - NSknee lock
             switch iEvent
                 % Event 1 - Ground contact
                 case 1
                     if strcmp(KW.Support,'Left')
                         KW.Support = 'Right';
+                        anklePos = KW.GetPos(Xi,'NSankle');
                     elseif strcmp(KW.Support,'Right')
                         KW.Support = 'Left';
+                        anklePos = KW.GetPos(Xi,'Sankle');
                     end
-                    Xf = CalcImpact(KW, Xi);
+                    [Xf, Lambda] = CalcImpact(KW, Xi);
+                    if strcmp(KW.Support,'Left')
+                        ankleVel = KW.GetVel(Xf,'NSankle');
+                    elseif strcmp(KW.Support,'Right')
+                        ankleVel = KW.GetVel(Xf,'Sankle');
+                    end
+                    alpha = Floor.SurfSlope(anklePos(1));
+                    n = [sin(alpha), cos(alpha)];
+                    LambdaN = dot(Lambda,n);
+                    ankleVelN = dot(ankleVel,n); 
+                    if LambdaN < 0
+                        KW.BadImpulse = 1;
+                    end
+                    if ankleVelN <= 0
+                        KW.BadLiftoff = 1;
+                    end
                     % Event 2 - Robot fell
                 case 2
                     Xf = Xi;

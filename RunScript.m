@@ -1,8 +1,8 @@
 KW = KneedWalker; 
 Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
-Floor = Terrain(0,-15);
+Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = [0 0 -30/180*pi 190/180*pi 170/180*pi pi 12/18*pi zeros(1,7)];
+Sim.IC = [0 0 -30/180*pi 190/180*pi 170/180*pi pi 12/18*pi 0 0 0 -1 8 0 -8];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
@@ -11,8 +11,8 @@ EndCond = 0;
 %     F(ii,:) = KW.GetReactionForces(X(ii,:).');
 % end
 
-Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:));
-if Ie(end) >= 2
+Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
+if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -27,8 +27,8 @@ while ~EndCond
 %     F = [F;tF];
 %     Fn = F(:,1)*sin(15/180*pi) + F(:,2)*cos(15/180*pi);
 %     tF = [];
-    Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:));
-    if Ie(end) >= 2
+    Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
+    if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end
