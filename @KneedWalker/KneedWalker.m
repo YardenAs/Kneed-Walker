@@ -159,16 +159,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                -(g*lth*sin(bns)*(2*msh + mth))/2;
                (g*lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2;
                -(g*lsh*msh*sin(gns))/2];
-           if strcmp(KW.Support,'Left')
                W = [ 1, 0, 0, 0, 0, 0, 0;
                      0, 1, 0, 0, 0, 0, 0];
                Wdot = zeros(size(W));
-           elseif strcmp(KW.Support,'Right')
-               W =  [ 1, 0, 0, lth*cos(bs), - lsh*cos(bns) - (lth*cos(bns))/2, lsh*cos(gs), -(lth*cos(gns))/2;
-                      0, 1, 0, lth*sin(bs),   lsh*sin(bns) - (lth*sin(bns))/2, lsh*sin(gs),  (lth*sin(gns))/2];
-               Wdot = [ 0, 0, 0, -dbs*lth*sin(bs), dbns*(lsh*sin(bns) + (lth*sin(bns))/2), -dgs*lsh*sin(gs), (dgns*lth*sin(gns))/2;
-                        0, 0, 0,  dbs*lth*cos(bs), dbns*(lsh*cos(bns) - (lth*cos(bns))/2),  dgs*lsh*cos(gs), (dgns*lth*cos(gns))/2];
-           end
+
 
             Fq = [             0;
                                0;
@@ -232,13 +226,26 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)
-            [M, ~, ~, Wc, ~, ~] = DynEq(KW, Xi);
+            [M, ~, ~, ~, ~, ~] = DynEq(KW, Xi);
+            mt = KW.to(1); lt = KW.to(2); It = KW.to(3); %#ok
+            msh = KW.sh(1); lsh = KW.sh(2); Ish = KW.sh(3); %#ok
+            mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3); %#ok
+            g = KW.grav; %#ok
+            uShip = KW.Torques(1); uNShip = KW.Torques(2); uSknee = KW.Torques(3);... %#ok
+                uNSknee = KW.Torques(4); %#ok
+            x = Xi(1); y = Xi(2); a = Xi(3); bs = Xi(4); bns = Xi(5); gs = Xi(6); gns = Xi(7); %#ok
+            dx = Xi(8); dy = Xi(9); da = Xi(10); dbs = Xi(11); dbns = Xi(12); dgs = Xi(13); dgns = Xi(14); %#ok
+            Wc =  [ 1, 0, 0, lth*cos(bs), -lth*cos(bns), lsh*cos(gs), -lsh*cos(gns);
+             0, 1, 0, lth*sin(bs), -lth*sin(bns), lsh*sin(gs), -lsh*sin(gns)];
             A = [M, -Wc.';Wc, zeros(2)];
             b = [M*Xi(8:end).';zeros(2,1)];
             sol = A\b;
+            NSanklePos = KW.GetPos(Xi,'NSankle');
             Xdotnew = sol(1:7);
-            Xf = [Xi(1:7),Xdotnew.'];
+            Xf = [NSanklePos, Xi(3),Xi(5), Xi(4), Xi(7), Xi(6), 0, 0, Xdotnew(3)...
+                , Xdotnew(5), Xdotnew(4), Xdotnew(7), Xdotnew(6)];
             Lambda = sol(8:end);
+
         end
        
         function Xf = HandleEvent(KW, iEvent, Xi, Floor)
@@ -250,23 +257,13 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             switch iEvent
                 % Event 1 - Ground contact
                 case 1
-                    if strcmp(KW.Support,'Left')
-                        KW.Support = 'Right';
-                        anklePos = KW.GetPos(Xi,'NSankle');
-                    elseif strcmp(KW.Support,'Right')
-                        KW.Support = 'Left';
-                        anklePos = KW.GetPos(Xi,'Sankle');
-                    end
                     [Xf, Lambda] = CalcImpact(KW, Xi);
-                    if strcmp(KW.Support,'Left')
-                        ankleVel = KW.GetVel(Xf,'NSankle');
-                    elseif strcmp(KW.Support,'Right')
-                        ankleVel = KW.GetVel(Xf,'Sankle');
-                    end
+                    anklePos = KW.GetPos(Xf, 'NSankle');
+                    ankleVel = KW.GetVel(Xf, 'NSankle');
                     alpha = Floor.SurfSlope(anklePos(1));
                     n = [sin(alpha), cos(alpha)];
                     LambdaN = dot(Lambda,n);
-                    ankleVelN = dot(ankleVel,n); 
+                    ankleVelN = dot(ankleVel,n);
                     if LambdaN < 0
                         KW.BadImpulse = 1;
                     end

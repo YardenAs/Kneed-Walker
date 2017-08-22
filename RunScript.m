@@ -1,4 +1,4 @@
-KW = KneedWalker; 
+KW = KneedWalker;
 Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
@@ -12,7 +12,7 @@ EndCond = 0;
 % end
 
 Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
+if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -28,7 +28,7 @@ while ~EndCond
 %     Fn = F(:,1)*sin(15/180*pi) + F(:,2)*cos(15/180*pi);
 %     tF = [];
     Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-    if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
+    if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end
