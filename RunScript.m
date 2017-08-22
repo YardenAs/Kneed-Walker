@@ -12,7 +12,7 @@ EndCond = 0;
 % end
 
 Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
+if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -28,7 +28,7 @@ while ~EndCond
 %     Fn = F(:,1)*sin(15/180*pi) + F(:,2)*cos(15/180*pi);
 %     tF = [];
     Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-    if Ie(end) >= 2 || isempty(KW.BadImpulse) || isempty(KW.BadLiftoff)
+    if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end

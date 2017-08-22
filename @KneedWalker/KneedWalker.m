@@ -164,10 +164,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                      0, 1, 0, 0, 0, 0, 0];
                Wdot = zeros(size(W));
            elseif strcmp(KW.Support,'Right')
-               W =  [ 1, 0, 0, lth*cos(bs), - lsh*cos(bns) - (lth*cos(bns))/2, lsh*cos(gs), -(lth*cos(gns))/2;
-                      0, 1, 0, lth*sin(bs),   lsh*sin(bns) - (lth*sin(bns))/2, lsh*sin(gs),  (lth*sin(gns))/2];
-               Wdot = [ 0, 0, 0, -dbs*lth*sin(bs), dbns*(lsh*sin(bns) + (lth*sin(bns))/2), -dgs*lsh*sin(gs), (dgns*lth*sin(gns))/2;
-                        0, 0, 0,  dbs*lth*cos(bs), dbns*(lsh*cos(bns) - (lth*cos(bns))/2),  dgs*lsh*cos(gs), (dgns*lth*cos(gns))/2];
+               W =  [ 1, 0, 0, lth*cos(bs), -lth*cos(bns), lsh*cos(gs), -lsh*cos(gns);
+                      0, 1, 0, lth*sin(bs), -lth*sin(bns), lsh*sin(gs), -lsh*sin(gns)];
+               Wdot = [ 0, 0, 0, -dbs*lth*sin(bs),  dbns*lth*sin(bns), -dgs*lsh*sin(gs),  dgns*lsh*sin(gns);
+                        0, 0, 0,  dbs*lth*cos(bs), -dbns*lth*cos(bns),  dgs*lsh*cos(gs), -dgns*lsh*cos(gns)];
            end
 
             Fq = [             0;
