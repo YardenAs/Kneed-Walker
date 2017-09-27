@@ -1,22 +1,22 @@
 % %%%%%% % Renders Kneed-Walker % %%%%%% %
 function status = RenderSim(Sim, X, Min, Max)
     % Get model positions
-    Sankle  = Sim.Mod.GetPos(X,'Sankle');
-    Sknee   = Sim.Mod.GetPos(X,'Sknee');
+    Lankle  = Sim.Mod.GetPos(X,'Lankle');
+    Lknee   = Sim.Mod.GetPos(X,'Lknee');
     Hip     = Sim.Mod.GetPos(X,'Hip');
     Head    = Sim.Mod.GetPos(X,'TorsoEnd');
-    NSankle = Sim.Mod.GetPos(X,'NSankle');
-    NSknee  = Sim.Mod.GetPos(X,'NSknee');
+    Rankle = Sim.Mod.GetPos(X,'Rankle');
+    Rknee  = Sim.Mod.GetPos(X,'Rknee');
 
     if isempty(Sim.Mod.RenderObj)
         % Model hasn't been rendered yet
         
         % Render links
-        Sim.Mod.RenderObj.nL1 = DrawLink(Sim.Mod, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, []);           % Support Thigh
-        Sim.Mod.RenderObj.nL2 = DrawLink(Sim.Mod, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, []);     % Support Shank
+        Sim.Mod.RenderObj.nL1 = DrawLink(Sim.Mod, Lknee(1), Lknee(2), Hip(1), Hip(2), 0, []);           % Support Thigh
+        Sim.Mod.RenderObj.nL2 = DrawLink(Sim.Mod, Lankle(1), Lankle(2), Lknee(1), Lknee(2), 0, []);     % Support Shank
         Sim.Mod.RenderObj.nL3 = DrawLink(Sim.Mod, Hip(1), Hip(2), Head(1), Head(2), 0, []);             % Torso
-        Sim.Mod.RenderObj.nL4 = DrawLink(Sim.Mod, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, []);         % NSupport Thigh
-        Sim.Mod.RenderObj.nL5 = DrawLink(Sim.Mod, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, []); % NSupport Shank
+        Sim.Mod.RenderObj.nL4 = DrawLink(Sim.Mod, Rknee(1), Rknee(2), Hip(1), Hip(2), 0, []);         % NSupport Thigh
+        Sim.Mod.RenderObj.nL5 = DrawLink(Sim.Mod, Rankle(1), Rankle(2), Rknee(1), Rknee(2), 0, []); % NSupport Shank
 
         axis equal
 %         axis([-0.5 1 0 1])
@@ -26,11 +26,11 @@ function status = RenderSim(Sim, X, Min, Max)
         % Call function again to proceed with the code below
         RenderSim(Sim, X, Min,Max);
     else
-        DrawLink(Sim.Mod, Sknee(1), Sknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL1);           % Support Thigh
-        DrawLink(Sim.Mod, Sankle(1), Sankle(2), Sknee(1), Sknee(2), 0, Sim.Mod.RenderObj.nL2);     % Support Shank
+        DrawLink(Sim.Mod, Lknee(1), Lknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL1);           % Support Thigh
+        DrawLink(Sim.Mod, Lankle(1), Lankle(2), Lknee(1), Lknee(2), 0, Sim.Mod.RenderObj.nL2);     % Support Shank
         DrawLink(Sim.Mod, Hip(1), Hip(2), Head(1), Head(2), 0, Sim.Mod.RenderObj.nL3);             % Torso
-        DrawLink(Sim.Mod, NSknee(1), NSknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL4);         % NSupport Thigh
-        DrawLink(Sim.Mod, NSankle(1), NSankle(2), NSknee(1), NSknee(2), 0, Sim.Mod.RenderObj.nL5); % NSupport Shank
+        DrawLink(Sim.Mod, Rknee(1), Rknee(2), Hip(1), Hip(2), 0, Sim.Mod.RenderObj.nL4);         % NSupport Thigh
+        DrawLink(Sim.Mod, Rankle(1), Rankle(2), Rknee(1), Rknee(2), 0, Sim.Mod.RenderObj.nL5); % NSupport Shank
     end
     status = 0;
 
