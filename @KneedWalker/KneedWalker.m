@@ -260,7 +260,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % Event 1 - Ground contact
             case 1
                 [Xf, Lambda] = CalcImpact(KW, Xi);
-                anklePos = KW.GetPos(Xf, 'Sankle');
+                anklePos = KW.GetPos(Xf, 'NSankle');
                 ankleVel = KW.GetVel(Xf, 'Sankle');
                 alpha = Floor.SurfSlope(anklePos(1));
                 n = [sin(alpha), cos(alpha)];
@@ -270,7 +270,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                     KW.BadImpulse = 1;
                 end
                 if ankleVelN <= 0
-%                     KW.BadLiftoff = 1;
+                    KW.BadLiftoff = 1;
                 end
                 % Event 2 - Robot fell
             case 2

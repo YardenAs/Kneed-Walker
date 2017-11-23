@@ -1,9 +1,9 @@
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
 Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
-Floor = Terrain(0,0);
+Floor = Terrain(0,-7);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = [0 0 20/18*pi 14/18*pi 20/18*pi 14/18*pi 0 0 0 0 0 0];
+Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
@@ -28,10 +28,15 @@ while ~EndCond
 %     F = [F;tF];
 %     Fn = F(:,1)*sin(15/180*pi) + F(:,2)*cos(15/180*pi);
 %     tF = [];
-    Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
+    SlegPos = KW.GetPos(X(end,:), 'Sankle');
+    NSlegPos = KW.GetPos(X(end,:), 'NSankle');
+    delta = SlegPos - NSlegPos;
+    if norm(delta) > 1e-5  
+        Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
+    end
     if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
-    end
+    end       
 end
 
 for ii = 1:length(Time)-1
