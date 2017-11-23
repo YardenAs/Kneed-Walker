@@ -1,8 +1,9 @@
 KW = KneedWalker;
+KW.to = [5 0 0]; % set the torso as a point mass
 Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = [0 0 -30/180*pi 19/18*pi 16/18*pi 19/18*pi 16/18*pi 0 0 0 0 0 0 0];
+Sim.IC = [0 0 20/18*pi 14/18*pi 20/18*pi 14/18*pi 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
@@ -48,5 +49,5 @@ figure()
 plot(Time,E)
 xlabel('Time [sec]'); ylabel('Energy [J]');
 figure()
-plot(Time, [X(:,4) - X(:,6), X(:,5) - X(:,7)]);
+plot(Time, [X(:,3) - X(:,5), X(:,4) - X(:,6)]);
 xlabel('Time [sec]'); ylabel('\Delta\theta [rad]');
