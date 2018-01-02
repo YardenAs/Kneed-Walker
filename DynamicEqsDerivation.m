@@ -52,7 +52,7 @@ ke_support_shank  = 1/2*msh*(vs2.'*vs2) + 1/2*Ish*dbs^2;
 
 % Non support leg
 ke_nsupport_thigh = 1/2*mth*(vns1.'*vns1) + 1/2*Ith*dgns^2;
-ke_nsupport_shank  = 1/2*msh*(vns2.'*vs2) + 1/2*Ish*dbns^2;
+ke_nsupport_shank  = 1/2*msh*(vns2.'*vns2) + 1/2*Ish*dbns^2;
 
 KE = simplify(ket + ke_support_thigh + ke_support_shank + ke_nsupport_thigh...
    + ke_nsupport_shank);
@@ -147,25 +147,3 @@ for i = 1:7
 end
 
 C = simplify(C);
-        
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
