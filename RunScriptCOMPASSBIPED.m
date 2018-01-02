@@ -1,6 +1,6 @@
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
-Control = Controller(0.5*ones(1,4),zeros(1,4),[0 pi/2 0 pi/2]);
+Control = Controller();
 Floor = Terrain(0,-7);
 Sim = Simulation(KW, Control, Floor);
 Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0];

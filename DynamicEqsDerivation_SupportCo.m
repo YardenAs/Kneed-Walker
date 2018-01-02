@@ -13,8 +13,8 @@ syms msh lsh Ish real
 syms mth lth Ith real
  
 % Input moments
-syms uShip uNShip uSknee uNSknee real
-InMoments = [uShip, uNShip, uSknee, uNSknee].';
+syms uShip uNShip uSknee uNSknee uSankle uNSankle uHip real
+InMoments = [uHip, uSankle, uNSankle].';
 
 % Gravity
 
@@ -62,7 +62,7 @@ ke_support_shank  = 1/2*msh*(vs2.'*vs2) + 1/2*Ish*dbs^2;
 
 % Non support leg
 ke_nsupport_thigh = 1/2*mth*(vns1.'*vns1) + 1/2*Ith*dgns^2;
-ke_nsupport_shank  = 1/2*msh*(vns2.'*vs2) + 1/2*Ish*dbns^2;
+ke_nsupport_shank  = 1/2*msh*(vns2.'*vns2) + 1/2*Ish*dbns^2;
 
 KE = simplify(ket + ke_support_thigh + ke_support_shank + ke_nsupport_thigh...
    + ke_nsupport_shank);
@@ -87,9 +87,10 @@ PE = simplify(pet + pe_support_thigh + pe_support_shank + pe_nsupport_thigh...
 
 hipSAng   = dbs;
 hipNSAng  = dbns;
+hip       = dbns - dbs;
 kneeSAng  = dgs - dbs;
 kneeNSAng = dgns - dbns;
-relAngs = [hipSAng, hipNSAng, kneeSAng, kneeNSAng];
+relAngs = [hip, -dgs, -dgns];
 P = relAngs*InMoments;
 Fq = jacobian(P,dq).';
 
@@ -154,27 +155,4 @@ for i = 1:7
     end
     C(i) = C(i) - diff(KE,q(i));
 end
-
 C = simplify(C);
-        
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
