@@ -5,15 +5,15 @@ classdef Terrain < handle & matlab.mixin.Copyable
     %                     infinite parabolla, finite parabolla
     
     properties
-        Type = 0;
+        Type=0;
         % 0 - inclined plane
         % 1 - sinusoidal
         % 2 - infinite parabolla
         % 3 - finite parabolla
         
         % Sine terrain params
-        sinAmp= 0.1;
-        sinFreq = 1;
+        sinAmp=0.1;
+        sinFreq=1;
         
         % Parabolla constant parK/2*x^2
         parK=0.025 % approx 1.5 deg/m
