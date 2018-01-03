@@ -1,24 +1,39 @@
 classdef Controller < handle & matlab.mixin.Copyable
     
     properties
-        CycleTime = [];
-        Amp = [];
-        Phase = [];
+        Period  = [];
+        Amp     = [];
+        Phase   = [];
+        omega   = [];
+        nEvents = 1;
+        Order   = 1;
     end
     
     methods
         % %%%%%% % Class constructor % %%%%%% %
         function C = Controller(varargin)
-        C.CycleTime = varargin{1};
-        C.Amp = varargin{2}; 
-        C.Phase = varargin{3};
+        C.omega  = varargin{1};
+        C.Amp    = varargin{2}; 
+        C.Phase  = varargin{3};
+        C.Period = varargin{4};
         end  
         
-        function Torques = Output(C, t, Xm) %#ok
-        Torques(1) = C.Amp(1).*sin(2*pi/C.CycleTime(1)*t + C.Phase(1));
-        Torques(2) = C.Amp(2).*sin(2*pi/C.CycleTime(2)*t + C.Phase(2));
-        Torques(3) = C.Amp(3).*sin(2*pi/C.CycleTime(3)*t + C.Phase(3));
-        Torques(4) = C.Amp(4).*sin(2*pi/C.CycleTime(4)*t + C.Phase(1));
+        function [Xdot] = Derivatives(C, t, X) %#ok
+        Xdot = C.omega;
+        end
+        
+        function [value, isterminal, direction] = Events(C, X) %#ok
+        isterminal = 1;
+        direction  = 1;
+        value = 1 - X;
+        end
+        
+        function [C, Xa] = HandleEvents(C)
+        Xa = 0;
+        end
+        
+        function Torques = Output(C, ~, X)
+        Torques = (X >= C.Phase).*C.Amp + (X <= X.Phase + C.Period).*C.Amp; 
         end
     end
 end
