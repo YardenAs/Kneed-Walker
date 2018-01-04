@@ -16,7 +16,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         BadLiftoff = [];
         
         % Control torques
-        Torques = [0 0 0 0].'; % Ship, Rhip, Sknee, Rknee
+        Torques = [0 0 0 0 0 0].'; % Ship, Rhip, Sknee, Rknee
         
         % Event index
         nEvents = 5; 
@@ -132,34 +132,33 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3);
             g = KW.grav;
             uLhip = KW.Torques(1); uRhip = KW.Torques(2); uLknee = KW.Torques(3);...
-                uRknee = KW.Torques(4);
+                uRknee = KW.Torques(4); uLankle = KW.Torques(5); uRankle = KW.Torques(6);
             x = X(1); y = X(2); a = X(3); bl = X(4); br = X(5); gl = X(6); gr = X(7); %#ok
             dx = X(8); dy = X(9); da = X(10); dbl = X(11); dbr = X(12); dgl = X(13); dgr = X(14); %#ok
    
-            M = [                     2*msh + mt + 2*mth,                                                                    0,          -(lt*mt*cos(a))/2,                                                                                                             (lth*cos(bl)*(2*msh + 2*mt + 3*mth))/2,           -(lth*cos(br)*(2*msh + mth))/2,                                                                                                             (lsh*cos(gl)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*cos(gr))/2;
-                                                       0,                                                   2*msh + mt + 2*mth,          -(lt*mt*sin(a))/2,                                                                               (lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2,           -(lth*sin(br)*(2*msh + mth))/2,                                                                                                             (lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*sin(gr))/2;
-                                       -(lt*mt*cos(a))/2,                                                    -(lt*mt*sin(a))/2,           (mt*lt^2)/4 + It,                                                                                                                         -(lt*lth*mt*cos(a - bl))/2,                                        0,                                                                                                                         -(lsh*lt*mt*cos(a - gl))/2,                             0;
-                  (lth*cos(bl)*(2*msh + 2*mt + 3*mth))/2, (lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2, -(lt*lth*mt*cos(a - bl))/2,                                                                             Ish + lth^2*msh + lth^2*mt + (3*lth^2*mth)/2 - (lth^2*mth*sin(bl)^2)/2,    -(lth^2*cos(br - bl)*(2*msh + mth))/2, (lsh*lth*((mth*cos(bl + gl))/2 - (mth*sin(bl + gl))/2 + 2*msh*cos(bl - gl) + 2*mt*cos(bl - gl) + (5*mth*cos(bl - gl))/2 + (mth*sin(bl - gl))/2))/2, -(lsh*lth*msh*cos(bl - gr))/2;
-                          -(lth*cos(br)*(2*msh + mth))/2,                                       -(lth*sin(br)*(2*msh + mth))/2,                          0,                                                                                                              -(lth^2*cos(br - bl)*(2*msh + mth))/2,          Ish + lth^2*msh + (lth^2*mth)/4,                                                                                                            -(lsh*lth*cos(br - gl)*(2*msh + mth))/2,  (lsh*lth*msh*cos(br - gr))/2;
-                  (lsh*cos(gl)*(3*msh + 2*mt + 4*mth))/2,                               (lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2, -(lsh*lt*mt*cos(a - gl))/2, (lsh*lth*((mth*cos(bl + gl))/2 - (mth*sin(bl + gl))/2 + 2*msh*cos(bl - gl) + 2*mt*cos(bl - gl) + (5*mth*cos(bl - gl))/2 + (mth*sin(bl - gl))/2))/2,  -(lsh*lth*cos(br - gl)*(2*msh + mth))/2,                                                                                                     Ith + (5*lsh^2*msh)/4 + lsh^2*mt + 2*lsh^2*mth,   -(lsh^2*msh*cos(gr - gl))/2;
-                                    -(lsh*msh*cos(gr))/2,                                                 -(lsh*msh*sin(gr))/2,                          0,                                                                                                                      -(lsh*lth*msh*cos(bl - gr))/2,             (lsh*lth*msh*cos(br - gr))/2,                                                                                                                        -(lsh^2*msh*cos(gr - gl))/2,           (msh*lsh^2)/4 + Ith];
-                   
-                                B =[(lt*mt*sin(a)*da^2)/2 + (lth*msh*sin(br) + (lth*mth*sin(br))/2)*dbr^2 + (- lth*msh*sin(bl) - lth*mt*sin(bl) - (3*lth*mth*sin(bl))/2)*dbl^2 + (lsh*msh*sin(gr)*dgr^2)/2 + (- (3*lsh*msh*sin(gl))/2 - lsh*mt*sin(gl) - 2*lsh*mth*sin(gl))*dgl^2;
-                                    (- lth*msh*cos(br) - (lth*mth*cos(br))/2)*dbr^2 + ((lth*mth*sin(bl))/2 + lth*msh*cos(bl) + lth*mt*cos(bl) + lth*mth*cos(bl))*dbl^2 + ((3*lsh*msh*cos(gl))/2 + lsh*mt*cos(gl) + 2*lsh*mth*cos(gl))*dgl^2 - (da^2*lt*mt*cos(a))/2 - (dgr^2*lsh*msh*cos(gr))/2;
-                                    -(lt*mt*(lth*sin(a - bl)*dbl^2 + lsh*sin(a - gl)*dgl^2))/2;
-                                    dbr^2*lth^2*msh*sin(br - bl) + (dbr^2*lth^2*mth*sin(br - bl))/2 - (dbl^2*lth^2*mth*sin(2*bl))/4 - (dgl^2*lsh*lth*mth*sin(bl + gl))/4 - (dgl^2*lsh*lth*mth*cos(bl - gl))/4 + (da^2*lt*lth*mt*sin(a - bl))/2 - (dgr^2*lsh*lth*msh*sin(bl - gr))/2 + dgl^2*lsh*lth*msh*sin(bl - gl) + dgl^2*lsh*lth*mt*sin(bl - gl) + (5*dgl^2*lsh*lth*mth*sin(bl - gl))/4 - (dgl^2*lsh*lth*mth*cos(bl + gl))/4;
-                                    (- lth^2*msh*sin(br - bl) - (lth^2*mth*sin(br - bl))/2)*dbl^2 + (lsh*lth*msh*sin(br - gr)*dgr^2)/2 + (- lsh*lth*msh*sin(br - gl) - (lsh*lth*mth*sin(br - gl))/2)*dgl^2;
-                                    -(lsh*(dbl^2*lth*mth*cos(bl + gl) + dbl^2*lth*mth*sin(bl + gl) - dbl^2*lth*mth*cos(bl - gl) - 2*da^2*lt*mt*sin(a - gl) - 4*dbr^2*lth*msh*sin(br - gl) - 2*dbr^2*lth*mth*sin(br - gl) + 4*dbl^2*lth*msh*sin(bl - gl) + 4*dbl^2*lth*mt*sin(bl - gl) + 5*dbl^2*lth*mth*sin(bl - gl) - 2*dgr^2*lsh*msh*sin(gr - gl)))/4;
-                                    -(lsh*msh*(lth*sin(br - gr)*dbr^2 - lth*sin(bl - gr)*dbl^2 + lsh*sin(gr - gl)*dgl^2))/2];
+            M = [                     2*msh + mt + 2*mth,                                                                    0,          -(lt*mt*cos(a))/2,                                                                                                             (lth*cos(bl)*(2*msh + 2*mt + 3*mth))/2,          -(lth*cos(br)*(2*msh + mth))/2,                                                                                                             (lsh*cos(gl)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*cos(gr))/2;
+                                                       0,                                                   2*msh + mt + 2*mth,          -(lt*mt*sin(a))/2,                                                                               (lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2,          -(lth*sin(br)*(2*msh + mth))/2,                                                                                                             (lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*sin(gr))/2;
+                                       -(lt*mt*cos(a))/2,                                                    -(lt*mt*sin(a))/2,           (mt*lt^2)/4 + It,                                                                                                                         -(lt*lth*mt*cos(a - bl))/2,                                       0,                                                                                                                         -(lsh*lt*mt*cos(a - gl))/2,                             0;
+                  (lth*cos(bl)*(2*msh + 2*mt + 3*mth))/2, (lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2, -(lt*lth*mt*cos(a - bl))/2,                                                                             Ith + lth^2*msh + lth^2*mt + (3*lth^2*mth)/2 - (lth^2*mth*sin(bl)^2)/2,   -(lth^2*cos(br - bl)*(2*msh + mth))/2, (lsh*lth*((mth*cos(bl + gl))/2 - (mth*sin(bl + gl))/2 + 2*msh*cos(bl - gl) + 2*mt*cos(bl - gl) + (5*mth*cos(bl - gl))/2 + (mth*sin(bl - gl))/2))/2, -(lsh*lth*msh*cos(bl - gr))/2;
+                          -(lth*cos(br)*(2*msh + mth))/2,                                       -(lth*sin(br)*(2*msh + mth))/2,                          0,                                                                                                              -(lth^2*cos(br - bl)*(2*msh + mth))/2,         Ith + lth^2*msh + (lth^2*mth)/4,                                                                                                            -(lsh*lth*cos(br - gl)*(2*msh + mth))/2,  (lsh*lth*msh*cos(br - gr))/2;
+                  (lsh*cos(gl)*(3*msh + 2*mt + 4*mth))/2,                               (lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2, -(lsh*lt*mt*cos(a - gl))/2, (lsh*lth*((mth*cos(bl + gl))/2 - (mth*sin(bl + gl))/2 + 2*msh*cos(bl - gl) + 2*mt*cos(bl - gl) + (5*mth*cos(bl - gl))/2 + (mth*sin(bl - gl))/2))/2, -(lsh*lth*cos(br - gl)*(2*msh + mth))/2,                                                                                                     Ish + (5*lsh^2*msh)/4 + lsh^2*mt + 2*lsh^2*mth,   -(lsh^2*msh*cos(gr - gl))/2;
+                                    -(lsh*msh*cos(gr))/2,                                                 -(lsh*msh*sin(gr))/2,                          0,                                                                                                                      -(lsh*lth*msh*cos(bl - gr))/2,            (lsh*lth*msh*cos(br - gr))/2,                                                                                                                        -(lsh^2*msh*cos(gr - gl))/2,           (msh*lsh^2)/4 + Ish];
 
-                               
-           G =    [                                                                       0;
-                                                                     g*(2*msh + mt + 2*mth);
-                                                                        -(g*lt*mt*sin(a))/2;
-                     (g*lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2;
-                                                           -(g*lth*sin(br)*(2*msh + mth))/2;
-                                                   (g*lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2;
-                                                                     -(g*lsh*msh*sin(gr))/2];
+            B =                                                                                                                                                 [(lt*mt*sin(a)*da^2)/2 + (lth*msh*sin(br) + (lth*mth*sin(br))/2)*dbr^2 + (- lth*msh*sin(bl) - lth*mt*sin(bl) - (3*lth*mth*sin(bl))/2)*dbl^2 + (lsh*msh*sin(gr)*dgr^2)/2 + (- (3*lsh*msh*sin(gl))/2 - lsh*mt*sin(gl) - 2*lsh*mth*sin(gl))*dgl^2;
+                                                                                                                                                   (- lth*msh*cos(br) - (lth*mth*cos(br))/2)*dbr^2 + ((lth*mth*sin(bl))/2 + lth*msh*cos(bl) + lth*mt*cos(bl) + lth*mth*cos(bl))*dbl^2 + ((3*lsh*msh*cos(gl))/2 + lsh*mt*cos(gl) + 2*lsh*mth*cos(gl))*dgl^2 - (da^2*lt*mt*cos(a))/2 - (dgr^2*lsh*msh*cos(gr))/2;
+                                                                                                                                                                                                                                                                                                                                                    -(lt*mt*(lth*sin(a - bl)*dbl^2 + lsh*sin(a - gl)*dgl^2))/2;
+                  dbr^2*lth^2*msh*sin(br - bl) + (dbr^2*lth^2*mth*sin(br - bl))/2 - (dbl^2*lth^2*mth*sin(2*bl))/4 - (dgl^2*lsh*lth*mth*sin(bl + gl))/4 - (dgl^2*lsh*lth*mth*cos(bl - gl))/4 + (da^2*lt*lth*mt*sin(a - bl))/2 - (dgr^2*lsh*lth*msh*sin(bl - gr))/2 + dgl^2*lsh*lth*msh*sin(bl - gl) + dgl^2*lsh*lth*mt*sin(bl - gl) + (5*dgl^2*lsh*lth*mth*sin(bl - gl))/4 - (dgl^2*lsh*lth*mth*cos(bl + gl))/4;
+                                                                                                                                                                                                                                        (- lth^2*msh*sin(br - bl) - (lth^2*mth*sin(br - bl))/2)*dbl^2 + (lsh*lth*msh*sin(br - gr)*dgr^2)/2 + (- lsh*lth*msh*sin(br - gl) - (lsh*lth*mth*sin(br - gl))/2)*dgl^2;
+                                                                                           -(lsh*(dbl^2*lth*mth*cos(bl + gl) + dbl^2*lth*mth*sin(bl + gl) - dbl^2*lth*mth*cos(bl - gl) - 2*da^2*lt*mt*sin(a - gl) - 4*dbr^2*lth*msh*sin(br - gl) - 2*dbr^2*lth*mth*sin(br - gl) + 4*dbl^2*lth*msh*sin(bl - gl) + 4*dbl^2*lth*mt*sin(bl - gl) + 5*dbl^2*lth*mth*sin(bl - gl) - 2*dgr^2*lsh*msh*sin(gr - gl)))/4;
+                                                                                                                                                                                                                                                                                                                       -(lsh*msh*(lth*sin(br - gr)*dbr^2 - lth*sin(bl - gr)*dbl^2 + lsh*sin(gr - gl)*dgl^2))/2];
+
+           G =  [                                                                       0;
+                                                                   g*(2*msh + mt + 2*mth);
+                                                                      -(g*lt*mt*sin(a))/2;
+                   (g*lth*(2*msh*sin(bl) - mth*cos(bl) + 2*mt*sin(bl) + 2*mth*sin(bl)))/2;
+                                                         -(g*lth*sin(br)*(2*msh + mth))/2;
+                                                 (g*lsh*sin(gl)*(3*msh + 2*mt + 4*mth))/2;
+                                                                   -(g*lsh*msh*sin(gr))/2];
            
            if strcmp(KW.Support,'Left')
                W = [ 1, 0, 0, 0, 0, 0, 0;
@@ -172,13 +171,13 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                         0, 0, 0,  dbl*lth*cos(bl), -dbr*lth*cos(br),  dgl*lsh*cos(gl), -dgr*lsh*cos(gr)];
            end
 
-            Fq = [             0;
-                               0;
-                - uRhip - uLhip;
-                  uLhip - uLknee;
-                uRhip - uRknee;
-                          uLknee;
-                         uRknee];
+            Fq = [                      0;
+                                        0;
+                           -uRhip - uLhip;
+                           uLhip - uLknee;
+                           uRhip - uRknee;
+                         uLknee - uLankle;
+                         uRknee - uRankle];
         end
             
         function [F] = GetReactionForces(KW, X)
@@ -287,6 +286,8 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                     % Event 5 - Rknee lock
                 case 5
                     Xf = Xi;
+                otherwise
+                    Xf = Xi;
             end
         end
         
@@ -295,12 +296,13 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             msh = KW.sh(1); lsh = KW.sh(2); Ish = KW.sh(3);
             mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3);
             g = KW.grav;
-            uShip = KW.Torques(1); uRhip = KW.Torques(2); uSknee = KW.Torques(3);... %%ok
-                uRknee = KW.Torques(4); %#ok
+            uLhip = KW.Torques(1); uRhip = KW.Torques(2); uLknee = KW.Torques(3);...
+                uRknee = KW.Torques(4); uLankle = KW.Torques(5); uRankle = KW.Torques(6); %#ok
             x = X(1); y = X(2); a = X(3); bl = X(4); br = X(5); gl = X(6); gr = X(7); %#ok
             dx = X(8); dy = X(9); da = X(10); dbl = X(11); dbr = X(12); dgl = X(13); dgr = X(14); 
             E  = (g*(4*msh*y + 2*mt*y + 4*mth*y + lsh*msh*cos(gr) - 3*lsh*msh*cos(gl) - 2*lsh*mt*cos(gl) - 4*lsh*mth*cos(gl) - lth*mth*sin(bl) + lt*mt*cos(a) + 2*lth*msh*cos(br) + lth*mth*cos(br) - 2*lth*msh*cos(bl) - 2*lth*mt*cos(bl) - 2*lth*mth*cos(bl)))/2 + (mth*((dx + (dbl*lth*cos(bl))/2 + dgl*lsh*cos(gl))^2 + (dy + dgl*lsh*sin(gl) - (dbl*lth*cos(bl))/2)^2))/2 + (It*da^2)/2 + (Ish*dbr^2)/2 + (Ish*dbl^2)/2 + (Ith*dgr^2)/2 + (Ith*dgl^2)/2 + (mt*((dx - (da*lt*cos(a))/2 + dbl*lth*cos(bl) + dgl*lsh*cos(gl))^2 + (dy - (da*lt*sin(a))/2 + dbl*lth*sin(bl) + dgl*lsh*sin(gl))^2))/2 + (mth*((dx - (dbr*lth*cos(br))/2 + dbl*lth*cos(bl) + dgl*lsh*cos(gl))^2 + (dy - (dbr*lth*sin(br))/2 + dbl*lth*sin(bl) + dgl*lsh*sin(gl))^2))/2 + (msh*((dx - dbr*lth*cos(br) + dbl*lth*cos(bl) - (dgr*lsh*cos(gr))/2 + dgl*lsh*cos(gl))^2 + (dy - dbr*lth*sin(br) + dbl*lth*sin(bl) - (dgr*lsh*sin(gr))/2 + dgl*lsh*sin(gl))^2))/2 + (msh*((dx + (dgl*lsh*cos(gl))/2)^2 + (dy + (dgl*lsh*sin(gl))/2)^2))/2;
         end
+        
         function KW = SetTorques(KW ,T)
             KW.Torques = T;
         end
