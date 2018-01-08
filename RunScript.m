@@ -2,7 +2,7 @@ KW = KneedWalker;
 Control = Controller(2,10*ones(1,3),zeros(1,3), 0.5*ones(1,3));
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = [0 0 -30/180*pi 190/180*pi 170/180*pi pi 16/18*pi 0 0 0 0 0 0 0 0];
+Sim.IC = [0 0 0/180*pi 190/180*pi 170/180*pi 190/180*pi 170/180*pi 0 0 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;

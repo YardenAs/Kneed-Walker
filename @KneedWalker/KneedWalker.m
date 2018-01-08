@@ -19,7 +19,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         Torques = [0 0 0 0 0 0].'; % Ship, Rhip, Sknee, Rknee
         
         % Event index
-        nEvents = 5; 
+        nEvents = 7; 
         % 1 - leg contact
         % 2 - robot fell
         % 3 - abs(alpha) >= pi/2 (torso rotation)
@@ -170,14 +170,15 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                Wdot = [ 0, 0, 0, -dbl*lth*sin(bl),  dbr*lth*sin(br), -dgl*lsh*sin(gl),  dgr*lsh*sin(gr);
                         0, 0, 0,  dbl*lth*cos(bl), -dbr*lth*cos(br),  dgl*lsh*cos(gl), -dgr*lsh*cos(gr)];
            end
+           
 
             Fq = [                      0;
                                         0;
                            -uRhip - uLhip;
                            uLhip - uLknee;
                            uRhip - uRknee;
-                         uLknee - uLankle;
-                         uRknee - uRankle];
+                         uLknee - uLankle*strcmp(KW.Support,'Left'); % make sure that the ankle torque is applied only when the foot touches the ground
+                         uRknee - uRankle*strcmp(KW.Support,'Right')];
         end
             
         function [F] = GetReactionForces(KW, X)
@@ -209,6 +210,8 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % 3 - abs(alpha) >= pi/2 (torso rotation)
             % 4 - Lknee lock
             % 5 - Rknee lock
+            % 6 - Left Leg 90 degrees
+            % 7 - Right Leg 90 degrees
             % Event 1 - Ground contact
             if strcmp(KW.Support,'Left')
                 NSanklPos = KW.GetPos(X, 'Rankle');
@@ -224,12 +227,16 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                 SanklePos = KW.GetPos(X, 'Rankle');
             end
             value(2) = HipPos(2) - SanklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
-            % Event 5 - abs(alpha) >= pi/2 (torso rotation)  
+            % Event 3 - abs(alpha) >= pi/2 (torso rotation)  
             value(3) = pi/2 - abs(X(3));
-            % Event 6 - Lknee lock
+            % Event 4 - Lknee lock
             value(4) = X(4) - X(6);
-            % Event 7 - Rknee lock
+            % Event 5 - Rknee lock
             value(5) = X(5) - X(7);
+            % Event 6 - Left Leg 90 degrees
+            value(6) = X(6) - pi/2;
+            % 7 - Right Leg 90 degrees
+            value(7) = X(7) - pi/2;
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)
@@ -249,8 +256,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % 4 - Lknee lock
             % 5 - Rknee lock
             switch iEvent
-                % Event 1 - Ground contact
-                case 1
+                case 1 % Event 1 - Ground contact
                     if strcmp(KW.Support,'Left')
                         KW.Support = 'Right';
                         NSanklePos = KW.GetPos(Xi,'Rankle');
@@ -274,17 +280,17 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                     if SankleVelN <= 0
                         KW.BadLiftoff = 1;
                     end
-                    % Event 2 - Robot fell
-                case 2
+                case 2 % Event 2 - Robot fell
                     Xf = Xi;
-                    % Event 3 - abs(alpha) >= pi/2 (torso rotation)
-                case 3
+                case 3 % Event 3 - abs(alpha) >= pi/2 (torso rotation)
                     Xf = Xi;
-                    % Event 4 - Lknee lock
-                case 4
+                case 4 % Event 4 - Lknee lock
                     Xf = Xi;
-                    % Event 5 - Rknee lock
-                case 5
+                case 5 % Event 5 - Rknee lock
+                    Xf = Xi;
+                case 6 % Event 6 - Left Leg 90 degrees
+                    Xf = Xi;
+                case 7 % Event 7 - Right Leg 90 degrees
                     Xf = Xi;
                 otherwise
                     Xf = Xi;
