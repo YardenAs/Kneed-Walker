@@ -5,9 +5,9 @@ function [ fit ] = GA_Sim_KW(Control_Params)
 
 
 omega      = Control_Params(1);
-Amplitudes = Control_Params(2:5);
-Phases     = Control_Params(6:9);
-Periods    = Control_Params(10:13);
+Amplitudes = Control_Params(2:6);
+Phases     = Control_Params(7:11);
+Periods    = Control_Params(12:16);
 Control    = Controller(omega,Amplitudes,Phases,Periods);
 
 KW = KneedWalker;
@@ -39,7 +39,7 @@ while ~EndCond
     end
 end
 
-fit = GetFit(Sim.Mod, Xe, Ie);
+fit = GetFit(Sim.Mod, Xe, Ie, X);
 
 end
 

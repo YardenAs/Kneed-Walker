@@ -1,4 +1,4 @@
-function [fitness] = GetFit(KW, Xe, Ie)
+function [fitness] = GetFit(KW, Xe, Ie, X)
 %GetFIt calculates the fitness of a single Kneed walker specimen
 % Leg1x = KW.GetPos(X(end,:),'Lankle');
 % Leg2x = KW.GetPos(X(end,:), 'Rankle');
@@ -19,12 +19,6 @@ if ~isempty(delta)
 else 
     fitness = 0;
 end
-% nSteps = length(find(Ie == 1));
-% 
-% fitness = 1/2*(-nSteps.^2 - pi^2*rearLeg.^2);
-% if ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
-%     fitness = fitness + 5;
-% end
-
+meanA = mean(X(:,3));
+fitness = fitness*(1-abs(meanA/(pi/2))/10); % up to 10% penalty based on torso angle
 end
-

@@ -15,14 +15,14 @@ classdef Controller < handle & matlab.mixin.Copyable
         function C = Controller(varargin)
         C.omega  = abs(varargin{1});
         C.Amp    = varargin{2}; 
-        C.Amp    = [C.Amp(1), C.Amp(1), C.Amp(2), C.Amp(2), C.Amp(3),C.Amp(3);
-                    C.Amp(4), C.Amp(4), zeros(1,4)];
+        C.Amp    = [C.Amp(1), C.Amp(1), C.Amp(2), C.Amp(2), C.Amp(3), C.Amp(3);
+                    C.Amp(4), C.Amp(4), C.Amp(5), C.Amp(5), zeros(1,2)];
         C.Phase  = abs(varargin{3});
         C.Phase  = [C.Phase(1), C.Phase(1) + 0.5, C.Phase(2), C.Phase(2) + 0.5, C.Phase(3), C.Phase(3) + 0.5;
-                    C.Phase(4), C.Phase(4) + 0.5, zeros(1,4)];
+                    C.Phase(4), C.Phase(4) + 0.5, C.Phase(5), C.Phase(5) + 0.5, zeros(1,2)];
         C.Period = abs(varargin{4});
         C.Period = [C.Period(1), C.Period(1), C.Period(2), C.Period(2), C.Period(3), C.Period(3);
-                    C.Period(4), C.Period(4), zeros(1,4)];
+                    C.Period(4), C.Period(4), C.Period(5), C.Period(5), zeros(1,2)];
         end  
         
         function [Xdot] = Derivative(C, t, X) %#ok

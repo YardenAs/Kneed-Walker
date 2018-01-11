@@ -5,8 +5,8 @@ function status = RenderSim(Sim, X, Min, Max)
     Lknee   = Sim.Mod.GetPos(X,'Lknee');
     Hip     = Sim.Mod.GetPos(X,'Hip');
     Head    = Sim.Mod.GetPos(X,'TorsoEnd');
-    Rankle = Sim.Mod.GetPos(X,'Rankle');
-    Rknee  = Sim.Mod.GetPos(X,'Rknee');
+    Rankle  = Sim.Mod.GetPos(X,'Rankle');
+    Rknee   = Sim.Mod.GetPos(X,'Rknee');
 
     if isempty(Sim.Mod.RenderObj)
         % Model hasn't been rendered yet

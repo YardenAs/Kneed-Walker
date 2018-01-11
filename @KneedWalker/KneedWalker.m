@@ -18,6 +18,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % Control torques
         Torques = [0 0 0 0 0 0].'; % Ship, Rhip, Sknee, Rknee
         
+        % Torso Controller
+        Kp = 0;
+        Kd = 0;
+        
         % Event index
         nEvents = 7; 
         % 1 - leg contact
@@ -174,9 +178,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
 
             Fq = [                      0;
                                         0;
-                           -uRhip - uLhip;
-                           uLhip - uLknee;
-                           uRhip - uRknee;
+                           -uRhip - uLhip + (KW.Kp*X(3) + KW.Kd*X(10));
+                           uLhip - uLknee + strcmp(KW.Support,'Left')*(KW.Kp*X(3) + KW.Kd*X(10));
+                           uRhip - uRknee + strcmp(KW.Support,'Right')*(KW.Kp*X(3) + KW.Kd*X(10));
                          uLknee - uLankle*strcmp(KW.Support,'Left'); % make sure that the ankle torque is applied only when the foot touches the ground
                          uRknee - uRankle*strcmp(KW.Support,'Right')];
         end
@@ -207,11 +211,11 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             direction = -ones(KW.nEvents,1);
             % 1 - leg contact
             % 2 - robot fell
-            % 3 - abs(alpha) >= pi/2 (torso rotation)
+            % 3 - abs(alpha) >= pi/6 (torso rotation)
             % 4 - Lknee lock
             % 5 - Rknee lock
-            % 6 - Left Leg 90 degrees
-            % 7 - Right Leg 90 degrees
+            % 6 - Left Leg 45 degrees
+            % 7 - Right Leg 45 degrees
             % Event 1 - Ground contact
             if strcmp(KW.Support,'Left')
                 NSanklPos = KW.GetPos(X, 'Rankle');
@@ -228,15 +232,15 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             end
             value(2) = HipPos(2) - SanklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
             % Event 3 - abs(alpha) >= pi/2 (torso rotation)  
-            value(3) = pi/2 - abs(X(3));
+            value(3) = pi/6 - abs(X(3));
             % Event 4 - Lknee lock
             value(4) = X(4) - X(6);
             % Event 5 - Rknee lock
             value(5) = X(5) - X(7);
             % Event 6 - Left Leg 90 degrees
-            value(6) = X(6) - pi/2;
+            value(6) = X(6) - pi/4;
             % 7 - Right Leg 90 degrees
-            value(7) = X(7) - pi/2;
+            value(7) = X(7) - pi/4;
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)

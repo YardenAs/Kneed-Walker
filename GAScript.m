@@ -1,21 +1,30 @@
 %% Optimization
-nParams = 13;
-Amp = 20*ones(1,4);
-Phase = ones(1,4);
-Period = 0.5*ones(1,4);
-omega = 2;
-LB = [0, -Amp, 0*Phase,0*Period];
-UB = [omega, Amp, Phase, Period];
+nParams = 16;
+AmpL = [5 0 0 -20 -20];
+AmpU = [20 20 20 0 -2];
+PhaseL = [0.5 0 0 0 0.5];
+PhaseU = [0.6 0.2 0.2 0.2 0.7];
+PeriodL = [0.2 0 0 0 0.1];
+PeriodU = 0.5*ones(1,5);
+omega = 0.6;
+LB = [0.4, AmpL, PhaseL, PeriodL];
+UB = [omega, AmpU, PhaseU, PeriodU];
 
 options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}...
-    ,'MutationFcn',{@mutationuniform, 0.1},'CrossoverFraction',0.6,'PopulationSize',800);
+    ,'CrossoverFraction',0.8,'PopulationSize',10000);
 [GAsol, fit] = ga(@GA_Sim_KW,nParams,[],[],[],[],LB,UB,[],[],options);
 c = clock;
 save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) '_m' num2str(c(5)) '.mat'],'GAsol');
 
 %% Simulation
-KW = KneedWalker; 
-Control = Controller(GAsol(1),GAsol(2:5),GAsol(6:9),GAsol(10:13));
+Control_Params = GAsol;
+omega      = Control_Params(1);
+Amplitudes = Control_Params(2:6);
+Phases     = Control_Params(7:11);
+Periods    = Control_Params(12:16);
+Control    = Controller(omega,Amplitudes,Phases,Periods);
+
+KW = KneedWalker;
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
 Sim.IC = [0 0 0/180*pi 190/180*pi 170/180*pi pi 160/180*pi 0 0 0 0 0 0 0 0];
@@ -39,10 +48,10 @@ while ~EndCond
         EndCond = 1;
     end
 end
-figure(1)
+figure(1); clf;
 for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
-    pause(1e-3);
+    pause(1e-2);
     drawnow;
 end
 E = [];
@@ -55,5 +64,14 @@ figure(2)
 plot(Time,E)
 figure(3)
 plot(Time,T(1:3,:).',Time,T(4:6,:).',[1/GAsol(1) 1/GAsol(1)],[-15,15],'--k')
-ylim([-15,15])
+% ylim([-15,15])
+legend('LHip','RHip','LKnee','RKnee','LAnkle','RAnkle')
+figure(4)
+phi = linspace(0,1,1000);
+T = [];
+for ii = 1:1000
+    T(:,ii) = Control.Output(phi(ii),phi(ii));
+end
+plot(phi,T(1:3,:).',phi,T(4:6,:).')
+% ylim([-15,15])
 legend('LHip','RHip','LKnee','RKnee','LAnkle','RAnkle')
