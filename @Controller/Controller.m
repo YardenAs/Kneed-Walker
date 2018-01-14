@@ -7,6 +7,8 @@ classdef Controller < handle & matlab.mixin.Copyable
         omega   = [];
         nEvents = 1;
         Order   = 1;
+        Kp      = 0;
+        Kd      = 0;
     end
     
     methods
@@ -23,6 +25,8 @@ classdef Controller < handle & matlab.mixin.Copyable
         C.Period = abs(varargin{4});
         C.Period = [C.Period(1), C.Period(1), C.Period(2), C.Period(2), C.Period(3), C.Period(3);
                     C.Period(4), C.Period(4), C.Period(5), C.Period(5), zeros(1,2)];
+        C.Kp     = varargin{5}(1);
+        C.Kd     = varargin{5}(2);
         end  
         
         function [Xdot] = Derivative(C, t, X) %#ok
@@ -43,11 +47,13 @@ classdef Controller < handle & matlab.mixin.Copyable
         end
         end
         
-        function Torques = Output(C, ~, X)
+        function Torques = Output(C, ~, X, Xkw, support)
         % if phase + period > 1, wrap.
         T = C.Amp.*(X >= C.Phase).*(X <= C.Phase + C.Period)...
             + C.Amp.*((C.Phase + C.Period - 1) >= X);
         Torques = T(1,:)+T(2,:);
+        Torques(1) = Torques(1) - strcmp(support,'Left')*(C.Kp*Xkw(3) + C.Kd*Xkw(10));
+        Torques(2) = Torques(2) - strcmp(support,'Right')*(C.Kp*Xkw(3) + C.Kd*Xkw(10));
         end
     end
 end

@@ -18,10 +18,6 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % Control torques
         Torques = [0 0 0 0 0 0].'; % Ship, Rhip, Sknee, Rknee
         
-        % Torso Controller
-        Kp = 0;
-        Kd = 0;
-        
         % Event index
         nEvents = 7; 
         % 1 - leg contact
@@ -178,9 +174,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
 
             Fq = [                      0;
                                         0;
-                           -uRhip - uLhip + (KW.Kp*X(3) + KW.Kd*X(10));
-                           uLhip - uLknee + strcmp(KW.Support,'Left')*(KW.Kp*X(3) + KW.Kd*X(10));
-                           uRhip - uRknee + strcmp(KW.Support,'Right')*(KW.Kp*X(3) + KW.Kd*X(10));
+                           -uRhip - uLhip;
+                           uLhip - uLknee;
+                           uRhip - uRknee;
                          uLknee - uLankle*strcmp(KW.Support,'Left'); % make sure that the ankle torque is applied only when the foot touches the ground
                          uRknee - uRankle*strcmp(KW.Support,'Right')];
         end
@@ -230,7 +226,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             elseif strcmp(KW.Support,'Right')
                 SanklePos = KW.GetPos(X, 'Rankle');
             end
-            value(2) = HipPos(2) - SanklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
+            value(2) = HipPos(2) - SanklePos(2) - 0.8*(KW.sh(2) + KW.th(2));
             % Event 3 - abs(alpha) >= pi/2 (torso rotation)  
             value(3) = pi/6 - abs(X(3));
             % Event 4 - Lknee lock
@@ -238,9 +234,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % Event 5 - Rknee lock
             value(5) = X(5) - X(7);
             % Event 6 - Left Leg 90 degrees
-            value(6) = X(6) - pi/4;
+            value(6) = X(6) - pi/2;
             % 7 - Right Leg 90 degrees
-            value(7) = X(7) - pi/4;
+            value(7) = X(7) - pi/2;
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)

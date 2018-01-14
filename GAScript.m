@@ -1,14 +1,16 @@
 %% Optimization
-nParams = 16;
+nParams = 18;
 AmpL = [5 0 0 -20 -20];
-AmpU = [20 20 20 0 -2];
+AmpU = [20 20 20 0 0];
 PhaseL = [0.5 0 0 0 0.5];
 PhaseU = [0.6 0.2 0.2 0.2 0.7];
-PeriodL = [0.2 0 0 0 0.1];
+PeriodL = [0.2 0 0 0 0];
 PeriodU = 0.5*ones(1,5);
 omega = 0.6;
-LB = [0.4, AmpL, PhaseL, PeriodL];
-UB = [omega, AmpU, PhaseU, PeriodU];
+TorsoControlL = [0 0];
+TorsoControlU = [10 10];
+LB = [  0.4, AmpL, PhaseL, PeriodL, TorsoControlL];
+UB = [omega, AmpU, PhaseU, PeriodU, TorsoControlU];
 
 options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}...
     ,'CrossoverFraction',0.8,'PopulationSize',10000);
@@ -22,9 +24,11 @@ omega      = Control_Params(1);
 Amplitudes = Control_Params(2:6);
 Phases     = Control_Params(7:11);
 Periods    = Control_Params(12:16);
-Control    = Controller(omega,Amplitudes,Phases,Periods);
+TorsoCon   = Control_Params(17:18);
+Control    = Controller(omega,Amplitudes,Phases,Periods,TorsoCon);
 
 KW = KneedWalker;
+
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
 Sim.IC = [0 0 0/180*pi 190/180*pi 170/180*pi pi 160/180*pi 0 0 0 0 0 0 0 0];
@@ -58,7 +62,7 @@ E = [];
 T = [];
 for ii = 1:length(Time)
     E(ii) = Sim.Mod.GetEnergy(X(ii,:));
-    T(:,ii) = Control.Output(Time(ii),X(ii,15));
+    T(:,ii) = Control.Output(Time(ii),X(ii,15),zeros(1,14),'blah');
 end
 figure(2)
 plot(Time,E)
@@ -70,7 +74,7 @@ figure(4)
 phi = linspace(0,1,1000);
 T = [];
 for ii = 1:1000
-    T(:,ii) = Control.Output(phi(ii),phi(ii));
+    T(:,ii) = Control.Output(phi(ii),phi(ii),zeros(1,14),'blah');
 end
 plot(phi,T(1:3,:).',phi,T(4:6,:).')
 % ylim([-15,15])

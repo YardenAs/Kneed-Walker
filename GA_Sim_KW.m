@@ -8,7 +8,8 @@ omega      = Control_Params(1);
 Amplitudes = Control_Params(2:6);
 Phases     = Control_Params(7:11);
 Periods    = Control_Params(12:16);
-Control    = Controller(omega,Amplitudes,Phases,Periods);
+TorsoCon   = Control_Params(17:18);
+Control    = Controller(omega,Amplitudes,Phases,Periods,TorsoCon);
 
 KW = KneedWalker;
 Floor = Terrain(0,0);
@@ -39,7 +40,7 @@ while ~EndCond
     end
 end
 
-fit = GetFit(Sim.Mod, Xe, Ie, X);
+fit = GetFit(Sim.Mod, X, Time, Ie, Xe);
 
 end
 
