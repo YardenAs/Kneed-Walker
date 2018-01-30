@@ -1,7 +1,7 @@
 function [fitness] = GetFit(KW, X, Time, Ie)
 %GetFIt calculates the fitness of a single Kneed walker specimen
-Leg1x = KW.GetPos(X(end,:),'Lankle');
-Leg2x = KW.GetPos(X(end,:), 'Rankle');
+Leg1x = KW.GetPos(X(end,:),'Sankle');
+Leg2x = KW.GetPos(X(end,:), 'NSankle');
 rearLeg = min([Leg1x(1), Leg2x(1)]);
 
 nSteps = length(find(Ie == 1));

@@ -14,7 +14,6 @@ classdef Simulation < handle & matlab.mixin.Copyable
         stDim; ModCo; ConCo;
         % Event params
         nEvents; ModEv; ConEv;
-    
         % Simulation parameters
         IC;
         EndCond = 0;
@@ -32,7 +31,7 @@ classdef Simulation < handle & matlab.mixin.Copyable
                     sim.ModCo = 1:sim.Mod.Order;
                     sim.ConEv = (1:sim.Con.nEvents) + sim.Mod.nEvents;
                     sim.ConCo = (1:sim.Con.Order)   + sim.Mod.Order;
-                    sim.nEvents = sim.Mod.nEvents + sim.Con.nEvents;
+                    sim.nEvents = sim.Mod.nEvents   + sim.Con.nEvents;
                 otherwise
                     sim.Mod = KneedWalker();
                     sim.Con = Controller();
@@ -41,9 +40,9 @@ classdef Simulation < handle & matlab.mixin.Copyable
         end
 
         function [Xt] = Derivative(sim,t,X)
-            sim.Mod.Torques = sim.Con.Output(t, X(sim.ModCo));
-            Xt = [sim.Mod.Derivative(t,X(sim.ModCo));
-                  sim.Con.Derivative(t,X(sim.ConCo))];
+            sim.Mod.SetTorques(sim.Con.Output(t, X(sim.ModCo)));
+            Xt = [sim.Mod.Derivative(t,X(sim.ModCo))];
+               
         end
 
         function [value, isterminal, direction] = Events(sim, t, X) %#ok<INUSL>
@@ -52,10 +51,7 @@ classdef Simulation < handle & matlab.mixin.Copyable
             direction = zeros(sim.nEvents,1);
             [value(sim.ModEv), isterminal(sim.ModEv), direction(sim.ModEv)] = ...
                 sim.Mod.Events(X(sim.ModCo), sim.Env);
-            [value(sim.ConEv), isterminal(sim.ConEv), direction(sim.ConEv)] = ...
-                sim.Con.Events(X(sim.ConCo));
         end
-        fit = GA_Sim_KW(Sim, Control_Params);
     end
 end
 

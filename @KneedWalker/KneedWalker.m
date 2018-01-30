@@ -16,7 +16,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         BadLiftoff = [];
         
         % Control torques
-        Torques = [0 0 0 0].'; % Ship, NShip, Sknee, NSknee
+        Torques = [0 0].'; % hip, support ankle
         
         % Event index
         nEvents = 2;
@@ -276,6 +276,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         end
         
         function KW = SetTorques(KW ,T)
+        if length(T) ~= 2
+            error(['length of T is ' num2str(length(T))]);
+        end
         KW.Torques = T;
         end
     end
