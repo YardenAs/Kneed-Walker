@@ -1,18 +1,20 @@
-function [ fit ] = GA_Sim_KW(Control_Params)
+function [ fit ] = GA_Sim_KW(genome)
 %GA_Fit_KW Is the fitness function for the Kneed Walker Genetic Algorithm
 %   Simulates the kneed walker with a controller and calculates the fitness
 %   based on the robot's performance in the simulation.
 
+hidden_sizes    = 5;
+C               = nnController(hidden_sizes,{'tansig'});
+KW              = KneedWalker;
+C.net.numInputs  = 8;
+C.net.numOutputs = 2;
+for ii = 1:hidden_sizes(1)
+    C.net.IW{1}   = [C.net.IW{1};
+        genome((ii*C.net.numInputs - C.net.numInputs + 1):ii*C.net.numInputs)];
+end
 
-omega      = Control_Params(1);
-Amplitudes = Control_Params(2:4);
-Phases     = Control_Params(5:7);
-Periods    = Control_Params(8:10);
-Control    = Controller(omega,Amplitudes,Phases,Periods);
-
-KW = KneedWalker;
 Floor = Terrain(0,0);
-Sim = Simulation(KW, Control, Floor);
+Sim = Simulation(KW, C, Floor);
 Sim.IC = [0 0 0/180*pi 190/180*pi 170/180*pi 190/180*pi 170/180*pi 0 0 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);

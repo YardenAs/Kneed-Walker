@@ -13,8 +13,8 @@ syms msh lsh Ish real
 syms mth lth Ith real
  
 % Input moments
-syms uShip uNShip uSknee uNSknee uSankle uNSankle uHip real
-InMoments = [uHip, uSankle, uNSankle].';
+syms uSankle  uHip real
+InMoments = [uHip, uSankle].';
 
 % Gravity
 
@@ -90,7 +90,7 @@ hipNSAng  = dbns;
 hip       = dbns - dbs;
 kneeSAng  = dgs - dbs;
 kneeNSAng = dgns - dbns;
-relAngs = [hip, -dgs, -dgns];
+relAngs = [hip, -dgs];
 P = relAngs*InMoments;
 Fq = jacobian(P,dq).';
 

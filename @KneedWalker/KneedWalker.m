@@ -19,12 +19,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         Torques = [0 0 0 0].'; % Ship, NShip, Sknee, NSknee
         
         % Event index
-        nEvents = 5;
+        nEvents = 2;
         % 1 - leg contact
         % 2 - robot fell
-        % 3 - abs(alpha) >= pi/2 (torso rotation)
-        % 4 - Sknee lock
-        % 5 - NSknee lock
+
         
         % Render parameters
         link_width = 0.025;
@@ -131,18 +129,18 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         msh = KW.sh(1); lsh = KW.sh(2); Ish = KW.sh(3);
         mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3);
         g = KW.grav;
-        uHip = KW.Torques(1); uSankle = KW.Torques(2); uNSankle = KW.Torques(3);
+        uHip = KW.Torques(1); uSankle = KW.Torques(2);
         x = X(1); y = X(2); bs = X(3); bns = X(4); gs = X(5); gns = X(6); %#ok
         dx = X(7); dy = X(8); dbs = X(9); dbns = X(10); dgs = X(11); dgns = X(12); %#ok
         
         M = [                     2*msh + mt + 2*mth,                                                                    0,                                                                                                             (lth*cos(bs)*(2*msh + 2*mt + 3*mth))/2,          -(lth*cos(bns)*(2*msh + mth))/2,                                                                                                             (lsh*cos(gs)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*cos(gns))/2;
             0,                                                   2*msh + mt + 2*mth,                                                                               (lth*(2*msh*sin(bs) - mth*cos(bs) + 2*mt*sin(bs) + 2*mth*sin(bs)))/2,          -(lth*sin(bns)*(2*msh + mth))/2,                                                                                                             (lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*sin(gns))/2;
-            (lth*cos(bs)*(2*msh + 2*mt + 3*mth))/2, (lth*(2*msh*sin(bs) - mth*cos(bs) + 2*mt*sin(bs) + 2*mth*sin(bs)))/2,                                                                             Ish + lth^2*msh + lth^2*mt + (3*lth^2*mth)/2 - (lth^2*mth*sin(bs)^2)/2,   -(lth^2*cos(bns - bs)*(2*msh + mth))/2, (lsh*lth*((mth*cos(bs + gs))/2 - (mth*sin(bs + gs))/2 + 2*msh*cos(bs - gs) + 2*mt*cos(bs - gs) + (5*mth*cos(bs - gs))/2 + (mth*sin(bs - gs))/2))/2, -(lsh*lth*msh*cos(bs - gns))/2;
-            -(lth*cos(bns)*(2*msh + mth))/2,                                      -(lth*sin(bns)*(2*msh + mth))/2,                                                                                                             -(lth^2*cos(bns - bs)*(2*msh + mth))/2,          Ish + lth^2*msh + (lth^2*mth)/4,                                                                                                           -(lsh*lth*cos(bns - gs)*(2*msh + mth))/2, (lsh*lth*msh*cos(bns - gns))/2;
-            (lsh*cos(gs)*(3*msh + 2*mt + 4*mth))/2,                               (lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2, (lsh*lth*((mth*cos(bs + gs))/2 - (mth*sin(bs + gs))/2 + 2*msh*cos(bs - gs) + 2*mt*cos(bs - gs) + (5*mth*cos(bs - gs))/2 + (mth*sin(bs - gs))/2))/2, -(lsh*lth*cos(bns - gs)*(2*msh + mth))/2,                                                                                                     Ith + (5*lsh^2*msh)/4 + lsh^2*mt + 2*lsh^2*mth,   -(lsh^2*msh*cos(gns - gs))/2;
-            -(lsh*msh*cos(gns))/2,                                                -(lsh*msh*sin(gns))/2,                                                                                                                     -(lsh*lth*msh*cos(bs - gns))/2,           (lsh*lth*msh*cos(bns - gns))/2,                                                                                                                       -(lsh^2*msh*cos(gns - gs))/2,            (msh*lsh^2)/4 + Ith];
+            (lth*cos(bs)*(2*msh + 2*mt + 3*mth))/2, (lth*(2*msh*sin(bs) - mth*cos(bs) + 2*mt*sin(bs) + 2*mth*sin(bs)))/2,                                                                             Ith + lth^2*msh + lth^2*mt + (3*lth^2*mth)/2 - (lth^2*mth*sin(bs)^2)/2,   -(lth^2*cos(bns - bs)*(2*msh + mth))/2, (lsh*lth*((mth*cos(bs + gs))/2 - (mth*sin(bs + gs))/2 + 2*msh*cos(bs - gs) + 2*mt*cos(bs - gs) + (5*mth*cos(bs - gs))/2 + (mth*sin(bs - gs))/2))/2, -(lsh*lth*msh*cos(bs - gns))/2;
+            -(lth*cos(bns)*(2*msh + mth))/2,                                      -(lth*sin(bns)*(2*msh + mth))/2,                                                                                                             -(lth^2*cos(bns - bs)*(2*msh + mth))/2,          Ith + lth^2*msh + (lth^2*mth)/4,                                                                                                           -(lsh*lth*cos(bns - gs)*(2*msh + mth))/2, (lsh*lth*msh*cos(bns - gns))/2;
+            (lsh*cos(gs)*(3*msh + 2*mt + 4*mth))/2,                               (lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2, (lsh*lth*((mth*cos(bs + gs))/2 - (mth*sin(bs + gs))/2 + 2*msh*cos(bs - gs) + 2*mt*cos(bs - gs) + (5*mth*cos(bs - gs))/2 + (mth*sin(bs - gs))/2))/2, -(lsh*lth*cos(bns - gs)*(2*msh + mth))/2,                                                                                                     Ish + (5*lsh^2*msh)/4 + lsh^2*mt + 2*lsh^2*mth,   -(lsh^2*msh*cos(gns - gs))/2;
+            -(lsh*msh*cos(gns))/2,                                                -(lsh*msh*sin(gns))/2,                                                                                                                     -(lsh*lth*msh*cos(bs - gns))/2,           (lsh*lth*msh*cos(bns - gns))/2,                                                                                                                       -(lsh^2*msh*cos(gns - gs))/2,            (msh*lsh^2)/4 + Ish];
         
-        B =  [                                                                                                                                                                                                (lth*sin(bns)*(2*msh + mth)*dbns^2)/2 + (lsh*msh*sin(gns)*dgns^2)/2 - (dbs^2*lth*sin(bs)*(2*msh + 2*mt + 3*mth))/2 - (dgs^2*lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2;
+        B = [                                                                                                                                                                                                  (lth*sin(bns)*(2*msh + mth)*dbns^2)/2 + (lsh*msh*sin(gns)*dgns^2)/2 - (dbs^2*lth*sin(bs)*(2*msh + 2*mt + 3*mth))/2 - (dgs^2*lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2;
             (lth*(2*msh*cos(bs) + 2*mt*cos(bs) + 2*mth*cos(bs) + mth*sin(bs))*dbs^2)/2 + (lsh*cos(gs)*(3*msh + 2*mt + 4*mth)*dgs^2)/2 - (dgns^2*lsh*msh*cos(gns))/2 - (dbns^2*lth*cos(bns)*(2*msh + mth))/2;
             dbns^2*lth^2*msh*sin(bns - bs) + (dbns^2*lth^2*mth*sin(bns - bs))/2 - (dbs^2*lth^2*mth*sin(2*bs))/4 - (dgs^2*lsh*lth*mth*sin(bs + gs))/4 - (dgs^2*lsh*lth*mth*cos(bs - gs))/4 - (dgns^2*lsh*lth*msh*sin(bs - gns))/2 + dgs^2*lsh*lth*msh*sin(bs - gs) + dgs^2*lsh*lth*mt*sin(bs - gs) + (5*dgs^2*lsh*lth*mth*sin(bs - gs))/4 - (dgs^2*lsh*lth*mth*cos(bs + gs))/4;
             (- lth^2*msh*sin(bns - bs) - (lth^2*mth*sin(bns - bs))/2)*dbs^2 + (lsh*lth*msh*sin(bns - gns)*dgns^2)/2 + (- lsh*lth*msh*sin(bns - gs) - (lsh*lth*mth*sin(bns - gs))/2)*dgs^2;
@@ -166,7 +164,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             -uHip;
             uHip;
             -uSankle;
-            -uNSankle];
+            0];
         end
         
         function [F] = GetReactionForces(KW, X)
@@ -195,9 +193,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         direction = -ones(KW.nEvents,1);
         % 1 - leg contact
         % 2 - robot fell
-        % 3 - abs(alpha) >= pi/2 (torso rotation)
-        % 4 - Sknee lock
-        % 5 - NSknee lock
+
         % Event 1 - Ground contact
         if strcmp(KW.Support,'Left')
             NSPos = KW.GetPos(X, 'NSankle');
@@ -213,12 +209,6 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             SAnklePos = KW.GetPos(X, 'NSankle');
         end
         value(2) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
-        % Event 5 - abs(alpha) >= pi/2 (torso rotation)
-        value(3) = 2*pi; %NOTE: THIS EVENT IS NOT VALID BECAUSE THERE IS NO ALHPA
-        % Event 6 - Sknee lock
-        value(4) = X(3) - X(5);
-        % Event 7 - NSknee lock
-        value(5) = X(4) - X(6);
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)
@@ -239,9 +229,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         sol = A\b;
         NSanklePos = KW.GetPos(Xi,'NSankle');
         Xdotnew = sol(1:6);
-        %         if (dot(KW.GetVel([Xi(1:6).'; Xdotnew],'NSankle'),[0 1]) <= 0)
-        %             KW.BadLiftoff = 1;
-        %         end
+%                 if (dot(KW.GetVel([Xi(1:6).'; Xdotnew],'NSankle'),[0 1]) <= 0)
+%                     KW.BadLiftoff = 1;
+%                 end     
+%%% Bad liftoff is on HandleEvent member function %%%
         Xf = [NSanklePos ,Xi(4), Xi(3), Xi(6), Xi(5), 0, 0,...
             Xdotnew(4), Xdotnew(3), Xdotnew(6), Xdotnew(5)];
         Lambda = sol(7:end);
@@ -251,9 +242,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         function Xf = HandleEvent(KW, iEvent, Xi, Floor)
         % 1 - leg contact
         % 2 - robot fell
-        % 3 - abs(alpha) >= pi/2 (torso rotation)
-        % 4 - Sknee lock
-        % 5 - NSknee lock
+
         switch iEvent
             % Event 1 - Ground contact
             case 1
@@ -273,15 +262,6 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                 % Event 2 - Robot fell
             case 2
                 Xf = Xi;
-                % Event 3 - abs(alpha) >= pi/2 (torso rotation)
-            case 3
-                Xf = Xi;
-                % Event 4 - Sknee lock
-            case 4
-                Xf = Xi;
-                % Event 5 - NSknee lock
-            case 5
-                Xf = Xi;
         end
         end
         
@@ -292,7 +272,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         g = KW.grav;
         x = X(1); y = X(2); bs = X(3); bns = X(4); gs = X(5); gns = X(6); %#ok
         dx = X(7); dy = X(8); dbs = X(9); dbns = X(10); dgs = X(11); dgns = X(12);
-        E  = (mth*((dx + (dbs*lth*cos(bs))/2 + dgs*lsh*cos(gs))^2 + (dy + dgs*lsh*sin(gs) - (dbs*lth*cos(bs))/2)^2))/2 - (g*(3*lsh*msh*cos(gs) - 2*mt*y - 4*mth*y - lsh*msh*cos(gns) - 4*msh*y + 2*lsh*mt*cos(gs) + 4*lsh*mth*cos(gs) + lth*mth*sin(bs) - 2*lth*msh*cos(bns) - lth*mth*cos(bns) + 2*lth*msh*cos(bs) + 2*lth*mt*cos(bs) + 2*lth*mth*cos(bs)))/2 + (Ish*dbns^2)/2 + (Ish*dbs^2)/2 + (Ith*dgns^2)/2 + (Ith*dgs^2)/2 + (mth*((dx - (dbns*lth*cos(bns))/2 + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy - (dbns*lth*sin(bns))/2 + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (mt*((dx + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (msh*((dx - dbns*lth*cos(bns) + dbs*lth*cos(bs) - (dgns*lsh*cos(gns))/2 + dgs*lsh*cos(gs))^2 + (dy - dbns*lth*sin(bns) + dbs*lth*sin(bs) - (dgns*lsh*sin(gns))/2 + dgs*lsh*sin(gs))^2))/2 + (msh*((dx + (dgs*lsh*cos(gs))/2)^2 + (dy + (dgs*lsh*sin(gs))/2)^2))/2;
+        E  = (mth*((dx + (dbs*lth*cos(bs))/2 + dgs*lsh*cos(gs))^2 + (dy + dgs*lsh*sin(gs) - (dbs*lth*cos(bs))/2)^2))/2 - (g*(3*lsh*msh*cos(gs) - 2*mt*y - 4*mth*y - lsh*msh*cos(gns) - 4*msh*y + 2*lsh*mt*cos(gs) + 4*lsh*mth*cos(gs) + lth*mth*sin(bs) - 2*lth*msh*cos(bns) - lth*mth*cos(bns) + 2*lth*msh*cos(bs) + 2*lth*mt*cos(bs) + 2*lth*mth*cos(bs)))/2 + (Ith*dbns^2)/2 + (Ith*dbs^2)/2 + (Ish*dgns^2)/2 + (Ish*dgs^2)/2 + (mth*((dx - (dbns*lth*cos(bns))/2 + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy - (dbns*lth*sin(bns))/2 + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (mt*((dx + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (msh*((dx - dbns*lth*cos(bns) + dbs*lth*cos(bs) - (dgns*lsh*cos(gns))/2 + dgs*lsh*cos(gs))^2 + (dy - dbns*lth*sin(bns) + dbs*lth*sin(bs) - (dgns*lsh*sin(gns))/2 + dgs*lsh*sin(gs))^2))/2 + (msh*((dx + (dgs*lsh*cos(gs))/2)^2 + (dy + (dgs*lsh*sin(gs))/2)^2))/2;
         end
         
         function KW = SetTorques(KW ,T)
