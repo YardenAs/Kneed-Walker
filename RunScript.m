@@ -6,7 +6,7 @@ Sim.IC = [0 0 -30/180*pi 19/18*pi 16/18*pi 19/18*pi 16/18*pi 0 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
-[Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, [0 inf], Sim.IC, opt);
+[Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
 % for ii = 1:length(Time)
 %     F(ii,:) = KW.GetReactionForces(X(ii,:).');
 % end
@@ -18,7 +18,7 @@ end
 
 
 while ~EndCond
-    [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative,[Time(end) inf], Xf, opt);
+    [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative, Time(end):1e-3:10, Xf, opt);
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
 %     for ii = 1:length(tTime)
@@ -35,7 +35,6 @@ end
 
 for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
-    dt = Time(ii+1) - Time(ii);
     drawnow;
     pause(dt*10);
 end

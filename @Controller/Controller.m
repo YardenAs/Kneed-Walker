@@ -12,6 +12,7 @@ classdef Controller < handle & matlab.mixin.Copyable
     
     methods
         % %%%%%% % Class constructor % %%%%%% %
+        % assuming that the phase, amplitude and period are symmetrical
         function C = Controller(varargin)
         load('CB_torques.mat');
         C.CT_ank1 = T_ank1;

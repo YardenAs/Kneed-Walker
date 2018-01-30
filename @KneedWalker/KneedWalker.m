@@ -294,6 +294,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         dx = X(7); dy = X(8); dbs = X(9); dbns = X(10); dgs = X(11); dgns = X(12);
         E  = (mth*((dx + (dbs*lth*cos(bs))/2 + dgs*lsh*cos(gs))^2 + (dy + dgs*lsh*sin(gs) - (dbs*lth*cos(bs))/2)^2))/2 - (g*(3*lsh*msh*cos(gs) - 2*mt*y - 4*mth*y - lsh*msh*cos(gns) - 4*msh*y + 2*lsh*mt*cos(gs) + 4*lsh*mth*cos(gs) + lth*mth*sin(bs) - 2*lth*msh*cos(bns) - lth*mth*cos(bns) + 2*lth*msh*cos(bs) + 2*lth*mt*cos(bs) + 2*lth*mth*cos(bs)))/2 + (Ish*dbns^2)/2 + (Ish*dbs^2)/2 + (Ith*dgns^2)/2 + (Ith*dgs^2)/2 + (mth*((dx - (dbns*lth*cos(bns))/2 + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy - (dbns*lth*sin(bns))/2 + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (mt*((dx + dbs*lth*cos(bs) + dgs*lsh*cos(gs))^2 + (dy + dbs*lth*sin(bs) + dgs*lsh*sin(gs))^2))/2 + (msh*((dx - dbns*lth*cos(bns) + dbs*lth*cos(bs) - (dgns*lsh*cos(gns))/2 + dgs*lsh*cos(gs))^2 + (dy - dbns*lth*sin(bns) + dbs*lth*sin(bs) - (dgns*lsh*sin(gns))/2 + dgs*lsh*sin(gs))^2))/2 + (msh*((dx + (dgs*lsh*cos(gs))/2)^2 + (dy + (dgs*lsh*sin(gs))/2)^2))/2;
         end
+        
         function KW = SetTorques(KW ,T)
         KW.Torques = T;
         end

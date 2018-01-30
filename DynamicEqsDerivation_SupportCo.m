@@ -57,12 +57,12 @@ vnsa = jacobian(rnsa,q)*dq;
 ket = 1/2*mt*(vt.'*vt);
 
 % Support leg
-ke_support_thigh = 1/2*mth*(vs1.'*vs1) + 1/2*Ith*dgs^2;
-ke_support_shank  = 1/2*msh*(vs2.'*vs2) + 1/2*Ish*dbs^2;
+ke_support_thigh = 1/2*mth*(vs1.'*vs1) + 1/2*Ith*dbs^2;
+ke_support_shank  = 1/2*msh*(vs2.'*vs2) + 1/2*Ish*dgs^2;
 
 % Non support leg
-ke_nsupport_thigh = 1/2*mth*(vns1.'*vns1) + 1/2*Ith*dgns^2;
-ke_nsupport_shank  = 1/2*msh*(vns2.'*vns2) + 1/2*Ish*dbns^2;
+ke_nsupport_thigh = 1/2*mth*(vns1.'*vns1) + 1/2*Ith*dbns^2;
+ke_nsupport_shank  = 1/2*msh*(vns2.'*vns2) + 1/2*Ish*dgns^2;
 
 KE = simplify(ket + ke_support_thigh + ke_support_shank + ke_nsupport_thigh...
    + ke_nsupport_shank);
