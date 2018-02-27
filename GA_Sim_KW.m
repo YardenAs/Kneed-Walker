@@ -29,7 +29,7 @@ opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
 [Time, X, Te, ~, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
 Xf = Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env);
-if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+if Ie(end) >= Sim.ModEv(2) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -38,7 +38,7 @@ while ~EndCond
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
     Xf = Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env);
-    if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    if Ie(end) >= Sim.ModEv(2) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end

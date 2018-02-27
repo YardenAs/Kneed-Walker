@@ -5,30 +5,22 @@ net = configure(net,rand(4,10),rand(2,10));
 net = setwb(net, rand(37,1));
 C = nnController(5);
 C.net = net;
-Floor = Terrain(0,-7);
+Floor = Terrain(0,0);
 Sim = Simulation(KW, C, Floor);
 Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
-[Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, [0 inf], Sim.IC, opt);
-
-Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+[Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
+if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
 while ~EndCond
-    [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative,[Time(end) inf], Xf, opt);
+    [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative, Time(end):1e-3:10, Xf, opt);
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
-    SlegPos = KW.GetPos(X(end,:), 'Sankle');
-    NSlegPos = KW.GetPos(X(end,:), 'NSankle');
-    delta = SlegPos - NSlegPos;
-    if norm(delta) > 1e-5  
-        Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env);
-    end
-    if Ie(end) >= 2 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end       
 end
@@ -37,7 +29,7 @@ for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
     dt = Time(ii+1) - Time(ii);
     drawnow;
-    pause(dt*10);
+    pause(dt);
 end
 E = []; Pos = [];
 for ii = 1:length(Time)

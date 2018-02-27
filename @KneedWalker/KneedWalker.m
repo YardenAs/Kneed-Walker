@@ -7,6 +7,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
         Order = 12;
+        swingLegExtension = 3e-2;
         
         % Support
         Support = 'Left'; % Right
@@ -14,14 +15,16 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % Flags
         BadImpulse = [];
         BadLiftoff = [];
+        swingLegExtended = 1;
         
         % Control torques
         Torques = [0 0].'; % hip, support ankle
         
         % Event index
-        nEvents = 2;
+        nEvents = 3;
         % 1 - leg contact
-        % 2 - robot fell
+        % 2 - swing leg angular velocity cross 0
+        % 3 - robot fell
 
         
         % Render parameters
@@ -73,7 +76,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                 rnsk = rh + [-KW.th(2)*sin(X(4)), KW.th(2)*cos(X(4))];
                 rns2 = rnsk + [-KW.sh(2)*sin(X(6)), KW.sh(2)*cos(X(6))];
                 x = rns2(1);
-                y = rns2(2);
+                y = (1 - KW.swingLegExtended)*KW.swingLegExtension + rns2(2);
                 Pos = [x y];
             case 'NSknee'
                 rsk = [X(1) + KW.sh(2)*sin(X(5)), X(2) - KW.sh(2)*cos(X(5))];
@@ -192,7 +195,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         isterminal = ones(KW.nEvents,1);
         direction = -ones(KW.nEvents,1);
         % 1 - leg contact
-        % 2 - robot fell
+        % 2 - swing leg angular velocity cross 0
+        % 3 - robot fell
+        
 
         % Event 1 - Ground contact
         if strcmp(KW.Support,'Left')
@@ -201,6 +206,8 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             NSPos = KW.GetPos(X, 'Sankle');
         end
         value(1) = NSPos(2) - Floor.Surf(NSPos(1));
+        % Event 3 - swing leg angular velocity cross 0
+        value(2) = X(10);
         % Event 2 - robot fell
         HipPos = KW.GetPos(X, 'Hip');
         if strcmp(KW.Support,'Left')
@@ -208,7 +215,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         elseif strcmp(KW.Support,'Right')
             SAnklePos = KW.GetPos(X, 'NSankle');
         end
-        value(2) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
+        value(3) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)
@@ -246,21 +253,33 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         switch iEvent
             % Event 1 - Ground contact
             case 1
-                [Xf, Lambda] = CalcImpact(KW, Xi);
-                anklePos = KW.GetPos(Xf, 'NSankle');
-                ankleVel = KW.GetVel(Xf, 'Sankle');
-                alpha = Floor.SurfSlope(anklePos(1));
-                n = [sin(alpha), cos(alpha)];
-                LambdaN = dot(Lambda(1:2),n);
-                ankleVelN = dot(ankleVel,n);
-                if LambdaN < 0
-                    KW.BadImpulse = 1;
-                end
-                if ankleVelN <= 0
-                    KW.BadLiftoff = 1;
-                end
-                % Event 2 - Robot fell
+                SlegPos = KW.GetPos(X(end,:), 'Sankle');
+                NSlegPos = KW.GetPos(X(end,:), 'NSankle');
+                delta = SlegPos - NSlegPos;
+                if norm(delta) > 1e-2
+                    [Xf, Lambda] = CalcImpact(KW, Xi);
+                    anklePos = KW.GetPos(Xf, 'NSankle');
+                    ankleVel = KW.GetVel(Xf, 'Sankle');
+                    alpha = Floor.SurfSlope(anklePos(1));
+                    n = [sin(alpha), cos(alpha)];
+                    LambdaN = dot(Lambda(1:2),n);
+                    ankleVelN = dot(ankleVel,n);
+                    if LambdaN < 0
+                        KW.BadImpulse = 1;
+                    end
+                    if ankleVelN <= 0
+                        KW.BadLiftoff = 1;
+                    end
+                else
+                    KW.swingLegExtended = 0;
+                    Xf = Xi;
+                end  
+            % Event 2 - swing leg angular velocity cross zero
             case 2
+                KW.swingLegExtended = 1;
+                Xf = Xi;
+            % Event 3 - Robot fell
+            case 3
                 Xf = Xi;
         end
         end
