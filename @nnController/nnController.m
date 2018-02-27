@@ -22,10 +22,7 @@ classdef nnController < handle & matlab.mixin.Copyable
                 C.net.layers{ii}.transferFcn = tfs{ii};
             end
         end
-        end
-        
-        
-        
+        end 
         function Torques = Output(C, t, X) %#ok
         filtered_X = X([3,4,9,10]);
         Torques = C.net(filtered_X); % get the output from the NN
