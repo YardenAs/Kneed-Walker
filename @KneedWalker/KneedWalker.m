@@ -1,21 +1,29 @@
 classdef KneedWalker  < handle & matlab.mixin.Copyable
     % KneedWalker is a class that defines a kneed biped robot.
     
+    %%% State Space %%%
+    % X1 = x
+    % X2 = y
+    % X3 = support thigh angle
+    % X4 = non support thigh angle
+    % X5 = support shank angle
+    % X6 = non support shank angle
+    % X7-12 respective velocities (X7 = dx...)
+    % thigh and shank angles and angular velocities must be equal to satisfy
+    % the locked knees constraint
+    
     properties
         sh = [];       % shank mass, length, moment of inertia
         th = [];       % thigh mass, length, moment of inertia
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
         Order = 12;
-        swingLegExtension = 3e-2;
-        
-        % Support
-        Support = 'Left'; % Right
+        swingLegExtension = 3e-2; 
         
         % Flags
         BadImpulse = [];
         BadLiftoff = [];
-        swingLegExtended = 1;
+        swingLegExtended = 0;
         
         % Control torques
         Torques = [0 0].'; % hip, support ankle
@@ -198,23 +206,14 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % 2 - swing leg angular velocity cross 0
         % 3 - robot fell
         
-
         % Event 1 - Ground contact
-        if strcmp(KW.Support,'Left')
-            NSPos = KW.GetPos(X, 'NSankle');
-        elseif strcmp(KW.Support,'Right')
-            NSPos = KW.GetPos(X, 'Sankle');
-        end
+        NSPos = KW.GetPos(X, 'NSankle');
         value(1) = NSPos(2) - Floor.Surf(NSPos(1));
         % Event 3 - swing leg angular velocity cross 0
         value(2) = X(10);
         % Event 2 - robot fell
         HipPos = KW.GetPos(X, 'Hip');
-        if strcmp(KW.Support,'Left')
-            SAnklePos = KW.GetPos(X, 'Sankle');
-        elseif strcmp(KW.Support,'Right')
-            SAnklePos = KW.GetPos(X, 'NSankle');
-        end
+        SAnklePos = KW.GetPos(X, 'Sankle');
         value(3) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
         end
         
@@ -235,10 +234,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         b = [M*Xi(7:end).';zeros(4,1)];
         sol = A\b;
         NSanklePos = KW.GetPos(Xi,'NSankle');
-        Xdotnew = sol(1:6);
-%                 if (dot(KW.GetVel([Xi(1:6).'; Xdotnew],'NSankle'),[0 1]) <= 0)
-%                     KW.BadLiftoff = 1;
-%                 end     
+        Xdotnew = sol(1:6);    
 %%% Bad liftoff is on HandleEvent member function %%%
         Xf = [NSanklePos ,Xi(4), Xi(3), Xi(6), Xi(5), 0, 0,...
             Xdotnew(4), Xdotnew(3), Xdotnew(6), Xdotnew(5)];
@@ -248,13 +244,14 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         
         function Xf = HandleEvent(KW, iEvent, Xi, Floor)
         % 1 - leg contact
-        % 2 - robot fell
+        % 2 - angular velocity cross 0
+        % 3 - robot fell
 
         switch iEvent
             % Event 1 - Ground contact
             case 1
-                SlegPos = KW.GetPos(X(end,:), 'Sankle');
-                NSlegPos = KW.GetPos(X(end,:), 'NSankle');
+                SlegPos = KW.GetPos(Xi(end,:), 'Sankle');
+                NSlegPos = KW.GetPos(Xi(end,:), 'NSankle');
                 delta = SlegPos - NSlegPos;
                 if norm(delta) > 1e-2
                     [Xf, Lambda] = CalcImpact(KW, Xi);
