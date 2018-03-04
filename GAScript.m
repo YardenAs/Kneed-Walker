@@ -1,6 +1,6 @@
 % nParams must be equal to the number of weights - therefore check that the
 % number of weights in GA_Sim_KW matches this size. 
-nParams = 37;
+nParams = 10;
 
 % LB = [0, -Amp, zeros(1,3),zeros(1,3)];
 % UB = [omega, Amp, Phase, Period];
@@ -16,9 +16,6 @@ save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) 
 
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
-net = feedforwardnet(5);
-net = configure(net,rand(4,10),rand(2,10));
-net = setwb(net, GAsol.');
 C = nnController(5);
 C.net = net;
 Floor = Terrain(0,0);

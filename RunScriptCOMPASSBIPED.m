@@ -11,14 +11,10 @@
 
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
-net = feedforwardnet(5);
-net = configure(net,rand(4,10),rand(2,10));
-net = setwb(net, rand(37,1));
-C = nnController(5);
-C.net = net;
+C  = Controller(rand(1,1), rand(3,1), rand(3,1), rand(3,1));
 Floor = Terrain(0,0);
 Sim = Simulation(KW, C, Floor);
-Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0];
+Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0 0];
 
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;

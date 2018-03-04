@@ -43,9 +43,9 @@ classdef Controller < handle & matlab.mixin.Copyable
         end
         end
         
-        function Torques = Output(C, ~, X)
+        function Torques = Output(C, t,  modX, conX)
         % if phase + period > 1, wrap.
-        T = C.Amp.*(X >= C.Phase).*(X <= C.Phase + C.Period);
+        T = C.Amp.*(conX >= C.Phase).*(conX <= C.Phase + C.Period);
         Torques = T(1,:) + T(2,:);
         end
     end

@@ -40,8 +40,8 @@ classdef Simulation < handle & matlab.mixin.Copyable
         end
 
         function [Xt] = Derivative(sim,t,X)
-            sim.Mod.SetTorques(sim.Con.Output(t, X(sim.ModCo)));
-            Xt = [sim.Mod.Derivative(t,X(sim.ModCo))];
+            sim.Mod.SetTorques(sim.Con.Output(t, X(sim.ModCo), X(sim.ConCo)));
+            Xt = [sim.Mod.Derivative(t,X(sim.ModCo)); sim.Con.Derivative(t,X(sim.ConCo))];
                
         end
 
