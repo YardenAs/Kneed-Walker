@@ -16,27 +16,31 @@ save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) 
 
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
-C = nnController(5);
-C.net = net;
 Floor = Terrain(0,0);
-Sim = Simulation(KW, C, Floor);
-Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0];
-
-opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
+Sim = Simulation(KW, Control, Floor);
+Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0 0];
+opt = odeset('reltol', 1e-7, 'abstol', 1e-7, 'Events', @Sim.Events);
 EndCond = 0;
 [Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
-Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env); 
-if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+
+
+Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
+      Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
+if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
+
 while ~EndCond
     [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative, Time(end):1e-3:10, Xf, opt);
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
-    Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env); 
-    if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    Xe = [Xe; tXe]; %#ok
+    Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
+          Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
+  
+    if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
-    end       
+    end
 end
 figure()
 for ii = 1:length(Time)-1

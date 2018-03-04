@@ -8,45 +8,43 @@
 % X7-12 respective velocities (X7 = dx...)
 % thigh and shank angles and angular velocities must be equal to satisfy
 % the locked knees constraint
-
+omega      = rand(1,1);
+Amplitudes = rand(1,3);
+Phases     = rand(1,3);
+Periods    = rand(1,3);
+Control    = Controller(omega,Amplitudes,Phases,Periods);
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
-C  = Controller(rand(1,1), rand(3,1), rand(3,1), rand(3,1));
 Floor = Terrain(0,0);
-Sim = Simulation(KW, C, Floor);
+Sim = Simulation(KW, Control, Floor);
 Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0 0];
-
-opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
+opt = odeset('reltol', 1e-7, 'abstol', 1e-7, 'Events', @Sim.Events);
 EndCond = 0;
 [Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
-Xf = [Sim.Mod.HandleEvent(Ie(end), X(Sim.ModCo,:),Sim.Env), X(sim.ConCo,:)]; 
-if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+
+
+Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
+      Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
+if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
+
 while ~EndCond
     [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative, Time(end):1e-3:10, Xf, opt);
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
-    Xf = [Sim.Mod.HandleEvent(Ie(end), X(Sim.ModCo,:),Sim.Env), X(sim.ConCo,:)]; 
-    if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    Xe = [Xe; tXe]; %#ok
+    Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
+          Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
+  
+    if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
-    end       
+    end
 end
-
+figure()
 for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
-    dt = Time(ii+1) - Time(ii);
+    dt = 1e-3;
     drawnow;
     pause(dt);
 end
-E = []; Pos = [];
-for ii = 1:length(Time)
-    E(ii) = Sim.Mod.GetEnergy(X(ii,:));        %#ok
-    Pos(ii,:) = KW.GetPos(X(ii,:), 'NSankle'); %#ok
-end
-figure()
-plot(Time,E)
-xlabel('Time [sec]'); ylabel('Energy [J]');
-figure()
-plot(Time, [X(:,3) - X(:,5), X(:,4) - X(:,6)]);
-xlabel('Time [sec]'); ylabel('\Delta\theta [rad]');
