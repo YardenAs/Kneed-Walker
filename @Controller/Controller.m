@@ -1,37 +1,47 @@
 classdef Controller < handle & matlab.mixin.Copyable
     
     properties
-        controllerType = 'nn' % nn or cpg
-        % change nEvents and Order if a derivatives function is needed
-        % more info can be found in the documentation
-        nEvents         = 1; 
-        Order           = 1; 
-        % hiddenSizes accepts a vector that hold the number of neurons
-        % in every layer. transfer Fcn accepts a cell array of activation 
-        % function for every layer (including output)
-        hiddenSizes     = 0;
-        transferFcn     = {'purelin'};
+        Period  = [];
+        Amp     = [];
+        Phase   = [];
+        omega   = [];
+        nEvents = 1;
+        Order   = 1;
     end
     
     methods
         % %%%%%% % Class constructor % %%%%%% %
+        % assuming that the phase, amplitude and period are symmetrical
         function C = Controller(varargin)
-        if nargin ~= 4
-            error('controller accepts 3 arguments in');
-        end
-        switch varargin{1}
-            case 'nn'
-                n = feedforwardnet(varargin{2});
-                for ii = 1:length(C.hiddenSizes)
-                    n.layers{ii}.transferFcn = C.transferFcn{ii};
-                end
-            case 'cpg'
-                % do stuff
-        end
+        C.omega  = abs(varargin{1});
+        C.Amp    = varargin{2}; 
+        C.Phase  = abs(varargin{3});
+        C.Period = abs(varargin{4});
         end  
         
-        function Torques = Output(C, t, X) %#ok
-            Torques = n.sim(
+        function [Xdot] = Derivative(C, t, X) %#ok
+        Xdot = C.omega;
+        end
+        
+        function [value, isterminal, direction] = Events(C, X) %#ok
+        isterminal = 1;
+        direction  = -1;
+        value = 1 - X;
+        end
+        
+        function [Xa] = HandleEvent(C,iEvent,Xi,ConEv) %#ok
+        if iEvent == ConEv(1)
+            Xa = 0;
+        else
+            Xa = Xi;
+        end
+        end
+        
+        function Torques = Output(C, ~, X)
+        % if phase + period > 1, wrap.
+        T = C.Amp.*(X >= C.Phase).*(X <= C.Phase + C.Period)...
+            + C.Amp.*((C.Phase + C.Period - 1) >= X);
+        Torques = T(1,:)+T(2,:);
         end
     end
 end
