@@ -278,6 +278,8 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % Event 3 - Robot fell
             case 3
                 Xf = Xi;
+            otherwise 
+                Xf = Xi;
         end
         end
         

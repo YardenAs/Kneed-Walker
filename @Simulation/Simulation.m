@@ -41,8 +41,7 @@ classdef Simulation < handle & matlab.mixin.Copyable
 
         function [Xt] = Derivative(sim,t,X)
             sim.Mod.SetTorques(sim.Con.Output(t, X(sim.ModCo), X(sim.ConCo)));
-            Xt = [sim.Mod.Derivative(t,X(sim.ModCo)); sim.Con.Derivative(t,X(sim.ConCo))];
-               
+            Xt = [sim.Mod.Derivative(t,X(sim.ModCo)); sim.Con.Derivative(t,X(sim.ConCo))];      
         end
 
         function [value, isterminal, direction] = Events(sim, t, X) %#ok<INUSL>
@@ -51,6 +50,9 @@ classdef Simulation < handle & matlab.mixin.Copyable
             direction = zeros(sim.nEvents,1);
             [value(sim.ModEv), isterminal(sim.ModEv), direction(sim.ModEv)] = ...
                 sim.Mod.Events(X(sim.ModCo), sim.Env);
+            [value(sim.ConEv), isterminal(sim.ConEv), direction(sim.ConEv)] = ...
+                sim.Con.Events(X(sim.ConCo));
+            
         end
     end
 end

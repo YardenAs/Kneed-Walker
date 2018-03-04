@@ -19,7 +19,7 @@ Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0 0];
 opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
 [Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
-Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env); 
+Xf = [Sim.Mod.HandleEvent(Ie(end), X(Sim.ModCo,:),Sim.Env), X(sim.ConCo,:)]; 
 if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
@@ -27,7 +27,7 @@ while ~EndCond
     [tTime, tX, tTe, tXe,tIe] = ode45(@Sim.Derivative, Time(end):1e-3:10, Xf, opt);
     Ie = [Ie; tIe]; Te = [Te; tTe]; %#ok
     X  = [X; tX]; Time = [Time; tTime]; %#ok
-    Xf = Sim.Mod.HandleEvent(Ie(end), X(end,:),Sim.Env); 
+    Xf = [Sim.Mod.HandleEvent(Ie(end), X(Sim.ModCo,:),Sim.Env), X(sim.ConCo,:)]; 
     if Ie(end) >= 3 || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end       
