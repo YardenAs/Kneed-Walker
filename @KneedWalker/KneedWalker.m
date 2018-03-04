@@ -33,8 +33,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % 1 - leg contact
         % 2 - swing leg angular velocity cross 0
         % 3 - robot fell
-
-        
+ 
         % Render parameters
         link_width = 0.025;
         link_color= [0.1, 0.3, 0.8];
@@ -140,9 +139,10 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         msh = KW.sh(1); lsh = KW.sh(2); Ish = KW.sh(3);
         mth = KW.th(1); lth = KW.th(2); Ith = KW.th(3);
         g = KW.grav;
-        uHip = KW.Torques(1); uSankle = KW.Torques(2);
+ 
         x = X(1); y = X(2); bs = X(3); bns = X(4); gs = X(5); gns = X(6); %#ok
         dx = X(7); dy = X(8); dbs = X(9); dbns = X(10); dgs = X(11); dgns = X(12); %#ok
+        uHip = KW.Torques(1); uSankle = KW.Torques(2);
         
         M = [                     2*msh + mt + 2*mth,                                                                    0,                                                                                                             (lth*cos(bs)*(2*msh + 2*mt + 3*mth))/2,          -(lth*cos(bns)*(2*msh + mth))/2,                                                                                                             (lsh*cos(gs)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*cos(gns))/2;
             0,                                                   2*msh + mt + 2*mth,                                                                               (lth*(2*msh*sin(bs) - mth*cos(bs) + 2*mt*sin(bs) + 2*mth*sin(bs)))/2,          -(lth*sin(bns)*(2*msh + mth))/2,                                                                                                             (lsh*sin(gs)*(3*msh + 2*mt + 4*mth))/2,          -(lsh*msh*sin(gns))/2;
