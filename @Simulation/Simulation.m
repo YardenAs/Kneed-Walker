@@ -55,7 +55,6 @@ classdef Simulation < handle & matlab.mixin.Copyable
             [value(sim.ConEv), isterminal(sim.ConEv), direction(sim.ConEv)] = ...
                 sim.Con.Events(X(sim.ConCo));
         end
-        fit = GA_Sim_KW(Sim, Control_Params);
     end
 end
 
