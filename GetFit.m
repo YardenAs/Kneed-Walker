@@ -14,7 +14,7 @@ for ii = 1:length(ind)
 end
 delta = diff(rearLeg);
 if ~isempty(delta)
-    fitness = -delta*delta.'
+    fitness = -delta*delta.';
 else 
     fitness = 0;
 end

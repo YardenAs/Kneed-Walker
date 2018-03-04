@@ -2,18 +2,23 @@
 % number of weights in GA_Sim_KW matches this size. 
 nParams = 10;
 
-% LB = [0, -Amp, zeros(1,3),zeros(1,3)];
-% UB = [omega, Amp, Phase, Period];
+LB = [0, -20*ones(1,3), zeros(1,3),zeros(1,3)];
+UB = [1, 20*ones(1,3), ones(1,3), ones(1,3)];
 options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}... 
-    ,'MutationFcn',{@mutationuniform, 0.1},'CrossoverFraction',0.6,'PopulationSize',1000); 
+    ,'CrossoverFraction',0.6,'PopulationSize',8000); 
 % options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv},'CrossoverFraction',0.6);
-[GAsol, fit] = ga(@GA_Sim_KW,nParams,[],[],[],[],[],[],[],[],options);
+[GAsol, fit] = ga(@GA_Sim_KW,nParams,[],[],[],[],LB,UB,[],[],options);
 c = clock;
 save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) '_m' num2str(c(5)) '.mat'],'GAsol');
 
 
 %% Simulate Results %%
-
+Control_Params = GAsol;
+omega      = Control_Params(1);
+Amplitudes = Control_Params(2:4);
+Phases     = Control_Params(5:7);
+Periods    = Control_Params(8:10);
+Control    = Controller(omega,Amplitudes,Phases,Periods);
 KW = KneedWalker;
 KW.to = [5 0 0]; % set the torso as a point mass
 Floor = Terrain(0,0);
