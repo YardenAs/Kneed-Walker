@@ -18,12 +18,12 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
         Order = 12;
-        swingLegExtension = 3e-2; 
+        swingLegExtension = 5e-3; 
         
         % Flags
         BadImpulse = [];
         BadLiftoff = [];
-        swingLegExtended = 0;
+        swingLegExtended = 1;
         
         % Control torques
         Torques = [0 0].'; % hip, support ankle
@@ -257,7 +257,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
                 SlegPos = KW.GetPos(Xi(end,:), 'Sankle');
                 NSlegPos = KW.GetPos(Xi(end,:), 'NSankle');
                 delta = SlegPos - NSlegPos;
-                if norm(delta) > 1e-2
+                if norm(delta) > 1e-3
                     [Xf, Lambda] = CalcImpact(KW, Xi);
                     anklePos = KW.GetPos(Xf, 'NSankle');
                     ankleVel = KW.GetVel(Xf, 'Sankle');

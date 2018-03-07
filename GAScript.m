@@ -1,16 +1,14 @@
 % nParams must be equal to the number of weights - therefore check that the
 % number of weights in GA_Sim_KW matches this size. 
-nParams = 10;
+nParams = 12;
 
-LB = [0, -20*ones(1,3), zeros(1,3),zeros(1,3)];
-UB = [1, 20*ones(1,3), ones(1,3), ones(1,3)];
-options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}... 
-    ,'CrossoverFraction',0.6,'PopulationSize',8000); 
-% options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv},'CrossoverFraction',0.6);
+LB = [0.2, -10*ones(1,3), [0 0 0.4] ,[0.1 0.1 0.1],[16/18*pi 14/18*pi]];
+UB = [0.6, 10*ones(1,3), [0.6 0.2 1] , ones(1,3),[20/18*pi 18/18*pi]];
+options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}...
+                    ,'PopulationSize',5000); 
 [GAsol, fit] = ga(@GA_Sim_KW,nParams,[],[],[],[],LB,UB,[],[],options);
 c = clock;
 save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) '_m' num2str(c(5)) '.mat'],'GAsol');
-
 
 %% Simulate Results %%
 Control_Params = GAsol;
@@ -20,18 +18,17 @@ Phases     = Control_Params(5:7);
 Periods    = Control_Params(8:10);
 Control    = Controller(omega,Amplitudes,Phases,Periods);
 KW = KneedWalker;
-KW.to = [5 0 0]; % set the torso as a point mass
+KW.to = [10 0 0]; % set the torso as a point mass
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
-Sim.IC = [0 0 17.63/18*pi 17/18*pi 17.63/18*pi 17/18*pi 0 0 0 0 0 0 0];
-opt = odeset('reltol', 1e-7, 'abstol', 1e-7, 'Events', @Sim.Events);
+Sim.IC = [0 0 Control_Params(11) Control_Params(12) Control_Params(11) Control_Params(12) 0 0 0 0 0 0 0];
+opt = odeset('reltol', 1e-8, 'abstol', 1e-9, 'Events', @Sim.Events);
 EndCond = 0;
 [Time, X, Te, Xe, Ie] = ode45(@Sim.Derivative, 0:1e-3:10, Sim.IC, opt);
 
-
 Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
       Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
-if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1))% || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -43,10 +40,11 @@ while ~EndCond
     Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
           Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
   
-    if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1)) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    if (Ie(end) >= Sim.ModEv(3) && Ie(end) <  Sim.ConEv(1))% || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end
+GetFit(Sim.Mod,Xe,Ie,X)
 figure()
 for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
@@ -54,6 +52,13 @@ for ii = 1:length(Time)-1
     drawnow;
     pause(dt);
 end
+T = [];
+for ii = 1:length(Time)
+    T(ii,:) = Control.Output(Time(ii),[],X(ii,13));
+end
+% figure()
+% plot(Time, [X(:,3) - X(:,5), X(:,4) - X(:,6)]);
+% xlabel('Time [sec]'); ylabel('\Delta\theta [rad]');
 figure()
-plot(Time, [X(:,3) - X(:,5), X(:,4) - X(:,6)]);
-xlabel('Time [sec]'); ylabel('\Delta\theta [rad]');
+plot(Time, T.')
+legend('Hip','Ankle')
