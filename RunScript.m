@@ -35,9 +35,3 @@ for ii = 1:length(Time)-1
     Sim.RenderSim(X(ii,:),-1,5);
     drawnow;
 end
-E = [];
-for ii = 1:length(Time)
-    E(ii) = Sim.Mod.GetEnergy(X(ii,:));
-end
-figure()
-plot(Time,E)
