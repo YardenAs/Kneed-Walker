@@ -3,7 +3,10 @@ function [fitness] = GetFit(KW, Xe, Ie, X)
 % Leg1x = KW.GetPos(X(end,:),'Lankle');
 % Leg2x = KW.GetPos(X(end,:), 'Rankle');
 % rearLeg = min([Leg1x(1), Leg2x(1)]);
-
+punishment = 1;
+if any(Ie == 5)
+    punishment = 0.8;
+end
 ind = find(Ie == 1);
 Xstep = Xe(ind,:); 
 rearLeg = [];
@@ -14,11 +17,12 @@ for ii = 1:length(ind)
 end
 delta = diff(rearLeg);
 if ~isempty(delta)
-    fitness = -delta*delta.';
+    fitness = -sum(delta);
 else 
     fitness = 0;
 end
 if fitness > -1e-3
     fitness = 0;
 end
+fitness = punishment*fitness;
 end

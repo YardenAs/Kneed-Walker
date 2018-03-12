@@ -18,7 +18,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
         Order = 12;
-        swingLegExtension = 5e-3; 
+        swingLegExtension = 5e-3;
+        FallThresh = 0.8;
+        SplitThresh = pi/4;
         
         % Flags
         BadImpulse = [];
@@ -29,11 +31,12 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         Torques = [0 0].'; % hip, support ankle
         
         % Event index
-        nEvents = 4;
+        nEvents = 5;
         % 1 - leg contact
         % 2 - swing leg angular velocity cross 0
         % 3 - robot fell
         % 4 - swing leg above hip
+        % 5 - robot does the splits
  
         % Render parameters
         link_width = 0.025;
@@ -207,6 +210,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % 2 - swing leg angular velocity cross 0
         % 3 - robot fell
         % 4 - swing leg above hip
+        % 5 - robot does the splits
         
         % Event 1 - Ground contact
         NSPos = KW.GetPos(X, 'NSankle');
@@ -216,9 +220,11 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         % Event 3 - robot fell
         HipPos = KW.GetPos(X, 'Hip');
         SAnklePos = KW.GetPos(X, 'Sankle');
-        value(3) = HipPos(2) - SAnklePos(2) - 0.6*(KW.sh(2) + KW.th(2));
+        value(3) = HipPos(2) - SAnklePos(2) - KW.FallThresh*(KW.sh(2) + KW.th(2));
         % Event 4 - swing leg above hip
         value(4) = HipPos(2) - NSPos(2);
+        % Event 5 - robot does the splits
+        value(5) = KW.SplitThresh - abs(X(3) - X(4));
         end
         
         function [Xf, Lambda] = CalcImpact(KW, Xi)
