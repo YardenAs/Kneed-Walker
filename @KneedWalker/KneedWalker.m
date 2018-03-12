@@ -291,6 +291,9 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % Event 4 - swing leg above hip
             case 4
                 Xf = Xi;
+            % Event 5 - robot does the splits
+            case 5
+                Xf = Xi;
             otherwise 
                 Xf = Xi;
         end
