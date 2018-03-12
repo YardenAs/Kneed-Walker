@@ -15,7 +15,7 @@ EndCond = 0;
 
 Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
       Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
-if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) %|| %~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
     EndCond = 1;
 end
 
@@ -26,7 +26,7 @@ while ~EndCond
     Xf = [Sim.Mod.HandleEvent(Ie(end), X(end,Sim.ModCo),Sim.Env),...
           Sim.Con.HandleEvent(Ie(end), X(end,Sim.ConCo),Sim.ConEv)];
   
-    if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) %|| ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
+    if Ie(end) >= Sim.ModEv(2) && Ie(end) <  Sim.ConEv(1) || ~isempty(KW.BadImpulse) || ~isempty(KW.BadLiftoff)
         EndCond = 1;
     end
 end
