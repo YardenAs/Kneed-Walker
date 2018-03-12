@@ -11,13 +11,12 @@ classdef Simulation < handle & matlab.mixin.Copyable
         Env; % Environment
     
         % State params
-        stDim; ModCo; ConCo;
+        ModCo; ConCo;
         % Event params
         nEvents; ModEv; ConEv;
     
         % Simulation parameters
         IC;
-        EndCond = 0;
     end
     
     methods
