@@ -7,6 +7,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         to = [];       % torso mass, length, moment of inertia
         grav  = 9.81;
         Order = 14;
+        FallThresh = 0.6;
         
         % Support
         Support = 'Left'; % Right
@@ -28,7 +29,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
         
         % Render parameters
         link_width = 0.025;
-        link_color= [0.1, 0.3, 0.8];
+        link_color = [0.1, 0.3, 0.8];
         RenderObj;
         LinkRes = 10;
         LineWidth = 1;
@@ -212,6 +213,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             % 5 - Rknee lock
             % 6 - Left Leg 45 degrees
             % 7 - Right Leg 45 degrees
+            
             % Event 1 - Ground contact
             if strcmp(KW.Support,'Left')
                 NSanklPos = KW.GetPos(X, 'Rankle');
@@ -226,7 +228,7 @@ classdef KneedWalker  < handle & matlab.mixin.Copyable
             elseif strcmp(KW.Support,'Right')
                 SanklePos = KW.GetPos(X, 'Rankle');
             end
-            value(2) = HipPos(2) - SanklePos(2) - 0.8*(KW.sh(2) + KW.th(2));
+            value(2) = HipPos(2) - SanklePos(2) - KW.FallThresh*(KW.sh(2) + KW.th(2));
             % Event 3 - abs(alpha) >= pi/2 (torso rotation)  
             value(3) = pi/6 - abs(X(3));
             % Event 4 - Lknee lock

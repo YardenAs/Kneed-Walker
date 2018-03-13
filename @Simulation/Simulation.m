@@ -11,13 +11,12 @@ classdef Simulation < handle & matlab.mixin.Copyable
         Env; % Environment
     
         % State params
-        stDim; ModCo; ConCo;
+        ModCo; ConCo;
         % Event params
         nEvents; ModEv; ConEv;
     
         % Simulation parameters
         IC;
-        EndCond = 0;
     end
     
     methods
@@ -55,7 +54,6 @@ classdef Simulation < handle & matlab.mixin.Copyable
             [value(sim.ConEv), isterminal(sim.ConEv), direction(sim.ConEv)] = ...
                 sim.Con.Events(X(sim.ConCo));
         end
-        fit = GA_Sim_KW(Sim, Control_Params);
     end
 end
 
