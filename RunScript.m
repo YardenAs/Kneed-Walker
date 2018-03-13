@@ -1,10 +1,11 @@
 KW = KneedWalker; 
-Control_Params = rand(1,16);
+Control_Params = rand(1,18);
 omega      = Control_Params(1);
 Amplitudes = Control_Params(2:6);
 Phases     = Control_Params(7:11);
 Periods    = Control_Params(12:16);
-Control    = Controller(omega,Amplitudes,Phases,Periods);
+PD_params  = Control_Params(17:18);
+Control    = Controller(omega,Amplitudes,Phases,Periods,PD_params);
 Floor = Terrain(0,0);
 Sim = Simulation(KW, Control, Floor);
 Sim.IC = [0 0 0/180*pi 190/180*pi 170/180*pi 190/180*pi 170/180*pi 0 0 0 0 0 0 0 0];
