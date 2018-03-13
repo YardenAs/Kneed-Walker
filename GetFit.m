@@ -16,9 +16,20 @@ for ii = 1:length(ind)
     rearLeg = [rearLeg, min([Leg1x(1) Leg2x(1)])]; %#ok
 end
 delta = diff(rearLeg);
+
 if ~isempty(delta)
     fitness = -sum(delta);
-else 
+    n_steps_thresh = 4;
+    if length(ind) > n_steps_thresh
+        steps_states = Xe(ind(4:2:length(ind)),3:end);
+        difference   = diff(steps_states);
+        for ii = 1:size(difference,2)
+            norm_vec(ii) = norm(difference(:,ii));
+        end
+        weights = [1 1 0 0 0 0 0.1 0.1 0 0 0.1].';
+        fitness = fitness + norm_vec*weights;
+    end
+else
     fitness = 0;
 end
 if fitness > -1e-3
