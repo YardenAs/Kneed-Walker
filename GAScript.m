@@ -2,10 +2,13 @@
 % number of weights in GA_Sim_KW matches this size. 
 nParams = 12;
 
-LB = [0.2, -10*ones(1,3), [0 0 0.4] ,[0.1 0.1 0.1],[16/18*pi 14/18*pi]];
-UB = [0.6, 10*ones(1,3), [0.6 0.2 1] , ones(1,3),[20/18*pi 18/18*pi]];
+% LB = [0.2, -10*ones(1,3), [0 0 0.4] ,[0.1 0.1 0.1],[16/18*pi 14/18*pi]];
+% UB = [0.6, 10*ones(1,3), [0.6 0.2 1] , ones(1,3),[20/18*pi 18/18*pi]];
+load('Workspaces\GAsol_fit-7.3948_d12_h22_m27.mat');
+LB = GAsol - 0.1*abs(GAsol);
+UB = GAsol + 0.1*abs(GAsol);
 options = gaoptimset('UseParallel',true,'PlotFcns',{@gaplotbestf,@gaplotbestindiv}...
-                    ,'PopulationSize',5000); 
+                    ,'PopulationSize',2000); 
 [GAsol, fit] = ga(@GA_Sim_KW,nParams,[],[],[],[],LB,UB,[],[],options);
 c = clock;
 save(['Workspaces/GAsol_fit' num2str(fit) '_d' num2str(c(3)) '_h' num2str(c(4)) '_m' num2str(c(5)) '.mat'],'GAsol');

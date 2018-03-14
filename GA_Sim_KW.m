@@ -8,7 +8,7 @@ Amplitudes = Control_Params(2:4);
 Phases     = Control_Params(5:7);
 Periods    = Control_Params(8:10);
 dt         = 1e-3;
-StopTime   = 10;
+StopTime   = 20;
 if max(Phases + Periods) < 1
     Control    = Controller(omega,Amplitudes,Phases,Periods);
     KW = KneedWalker;
