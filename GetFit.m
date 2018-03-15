@@ -19,14 +19,14 @@ delta = diff(rearLeg);
 
 if ~isempty(delta)
     fitness = -sum(delta);
-    n_steps_thresh = 6;
+    n_steps_thresh = 4;
     if length(ind) > n_steps_thresh
         steps_states = Xe(ind((n_steps_thresh-2):2:length(ind)),3:end);
         difference   = diff(steps_states);
         for ii = 1:size(difference,2)
             norm_vec(ii) = norm(difference(:,ii));
         end
-        weights = [1 1 0 0 0 0 0.1 0.1 0 0 0.1].';
+        weights = [1 1 0 0 0 0 0.1 0.1 0 0 1].';
         fitness = fitness + norm_vec*weights;
     end
 else
